@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cabrera.inventario.controllers.MenuiPrincipalController">
+    <top>
+        <MenuBar BorderPane.alignment="CENTER">
+            <menus>
+                <Menu text="Archivo">
+                    <items>
+                        <MenuItem text="Cerrar Sesión" />
+                        <MenuItem text="Salir" />
+                    </items>
+                </Menu>
+                <Menu text="Productos">
+                    <items>
+                        <MenuItem text="Nuevo Producto" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+    </top>
+
+    <center>
+        <VBox spacing="10.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <children>
+                <Label text="Inventario Actual">
+                    <font>
+                        <Font name="System Bold" size="20.0" />
+                    </font>
+                </Label>
+
+                <TableView fx:id="tablaProductos" prefHeight="450.0" prefWidth="760.0" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colCodigo" prefWidth="120.0" text="Código" />
+                        <TableColumn fx:id="colNombre" prefWidth="300.0" text="Nombre del Producto" />
+                        <TableColumn fx:id="colPrecio" prefWidth="150.0" text="Precio Venta" />
+                        <TableColumn fx:id="colStock" prefWidth="150.0" text="Stock Actual" />
+                    </columns>
+                </TableView>
+            </children>
+        </VBox>
+    </center>
+</BorderPane>
