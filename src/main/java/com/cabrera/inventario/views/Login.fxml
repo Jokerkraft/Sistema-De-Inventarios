@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cabrera.inventario.controllers.LoginController">
+    <children>
+        <!-- Contenedor central simulando una "tarjeta" de login -->
+        <VBox alignment="CENTER" layoutX="150.0" layoutY="35.0" prefHeight="330.0" prefWidth="300.0" spacing="20.0" style="-fx-background-color: #ffffff; -fx-border-color: #dcdcdc; -fx-border-radius: 8px; -fx-background-radius: 8px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+            <padding>
+                <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+            </padding>
+            <children>
+                <Label text="Sistema de Inventarios">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Label>
+                <Label text="Inicio de Sesión" textFill="#5b5b5b">
+                    <font>
+                        <Font size="14.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets bottom="10.0" />
+                    </VBox.margin>
+                </Label>
+
+                <VBox spacing="5.0">
+                    <children>
+                        <Label text="Usuario:" />
+                        <!-- fx:id debe coincidir con la variable en tu LoginController -->
+                        <TextField fx:id="txtUsuario" promptText="Ingrese su usuario" />
+                    </children>
+                </VBox>
+
+                <VBox spacing="5.0">
+                    <children>
+                        <Label text="Contraseña:" />
+                        <!-- fx:id debe coincidir con la variable en tu LoginController -->
+                        <PasswordField fx:id="txtContrasena" promptText="Ingrese su contraseña" />
+                    </children>
+                </VBox>
+
+                <!-- onAction debe coincidir con el método en tu LoginController -->
+                <Button mnemonicParsing="false" onAction="#manejarIngreso" prefHeight="35.0" prefWidth="250.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5px;" text="Ingresar">
+                    <VBox.margin>
+                        <Insets top="15.0" />
+                    </VBox.margin>
+                </Button>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>
+
