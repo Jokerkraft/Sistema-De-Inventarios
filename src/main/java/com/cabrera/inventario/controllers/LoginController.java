@@ -9,6 +9,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.scene.Node;
+import java.io.IOException;
 
 public class LoginController {
 
@@ -39,7 +45,29 @@ public class LoginController {
         // Validamos el resultado y mostramos los mensajes
         if (usuarioLogueado != null) {
             mostrarAlerta("Éxito", "Bienvenido al sistema, " + usuarioLogueado.getNombreCompleto(), Alert.AlertType.INFORMATION);
-            // Aquí agregaremos el código para abrir la ventana del Menú Principal
+
+            try {
+                // Cargamos el diseño del Menú Principal
+                FXMLLoader cargador = new FXMLLoader(getClass().getResource("/com/cabrera/inventario/view/MenuPrincipal.fxml"));
+                Parent raiz = cargador.load();
+
+                // Obtenemos la ventana actual a partir del botón que lanzó el evento
+                Stage ventanaActual = (Stage) ((Node) evento.getSource()).getScene().getWindow();
+
+                // Creamos una nueva escena en el menú principal
+                Scene nuevaEscena = new Scene(raiz, 800, 600);
+
+                // Mostramos la nueva escena
+                ventanaActual.setTitle("Sistema de Inventarios - Menú Principal");
+                ventanaActual.setScene(nuevaEscena);
+                ventanaActual.centerOnScreen();
+                ventanaActual.show();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                mostrarAlerta("Error fatal", "No se pudo cargar la pantalla principal", Alert.AlertType.ERROR);
+            }
+
         } else {
             // Mostramos el mensaje del error en caso de que las credenciales sean invalidas
             mostrarAlerta("Acceso Denegado", "Usuario o contraseña incorrectos. Verifique sus credenciales", Alert.AlertType.ERROR);
