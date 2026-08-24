@@ -14,29 +14,28 @@ public class UsuarioDAOImp implements UsuarioDAO{
     @Override
     public Usuario autenticar(String nombreUsuario, String contrasenaEncriptada) {
         Usuario usuarioLogueado = null;
+        String consulta = "SELECT * FROM usuarios WHERE username = ? AND password = ? AND activo = TRUE";
 
-        // Consulta SQL para prevenir la inyección SQL
-        String consulta = "SELECT * FROM usuarios WHERE username = ? AND password = ? AND activo = true";
+        // Obtenemos la conexión afuera del try para que Java NO la cierre automáticamente
+        Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
 
-        // Usamos la conexión Singleton
-        try (Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
-             PreparedStatement sentencia = conexion.prepareStatement(consulta)) {
+        // Ponemos el PreparedStatement en el try
+        try (PreparedStatement sentencia = conexion.prepareStatement(consulta)) {
 
-            // Asignamos las variables a la consulta
             sentencia.setString(1, nombreUsuario);
             sentencia.setString(2, contrasenaEncriptada);
 
-            ResultSet resultado = sentencia.executeQuery();
-
-            // Si el usuario existe, creamos el objeto Usuario con los datos de MySQL
-            if (resultado.next()) {
-                usuarioLogueado = new Usuario(
-                        resultado.getInt("id_usuario"),
-                        resultado.getString("nombre_completo"),
-                        resultado.getString("username"),
-                        resultado.getString("password"),
-                        resultado.getString("rol")
-                );
+            // El ResultSet también lo manejamos con su propio try
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                if (resultado.next()) {
+                    usuarioLogueado = new Usuario(
+                            resultado.getInt("id_usuario"),
+                            resultado.getString("nombre_completo"),
+                            resultado.getString("username"),
+                            resultado.getString("password"),
+                            resultado.getString("rol")
+                    );
+                }
             }
         } catch (SQLException excepcion) {
             System.err.println("Error al autenticar en la base de datos: " + excepcion.getMessage());

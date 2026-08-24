@@ -48,7 +48,7 @@ public class LoginController {
 
             try {
                 // Cargamos el diseño del Menú Principal
-                FXMLLoader cargador = new FXMLLoader(getClass().getResource("/com/cabrera/inventario/view/MenuPrincipal.fxml"));
+                FXMLLoader cargador = new FXMLLoader(getClass().getResource("/com/cabrera/inventario/views/MenuPrincipal.fxml"));
                 Parent raiz = cargador.load();
 
                 // Obtenemos la ventana actual a partir del botón que lanzó el evento
