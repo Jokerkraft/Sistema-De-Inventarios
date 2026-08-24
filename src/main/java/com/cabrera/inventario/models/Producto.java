@@ -5,6 +5,7 @@ public class Producto {
     private int idProducto;
     private String codigo;
     private String nombre;
+    private String descripcion;
     private double precioVenta;
     private int stockActual;
 
@@ -12,10 +13,11 @@ public class Producto {
     public Producto() {}
 
     // Constructor con todos los parámetros
-    public Producto(int idProducto, String codigo, String nombre, double precioVenta, int stockActual) {
+    public Producto(int idProducto, String codigo, String nombre, String descripcion, double precioVenta, int stockActual) {
         this.idProducto = idProducto;
         this.codigo = codigo;
         this.nombre = nombre;
+        this.descripcion = descripcion;
         this.precioVenta = precioVenta;
         this.stockActual = stockActual;
     }
@@ -60,5 +62,13 @@ public class Producto {
 
     public void setStockActual(int stockActual) {
         this.stockActual = stockActual;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }

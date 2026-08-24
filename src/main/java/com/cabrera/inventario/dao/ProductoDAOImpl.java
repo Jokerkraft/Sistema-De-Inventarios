@@ -10,13 +10,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductoDAOImpl implements ProductoDAO{
+public class ProductoDAOImpl implements ProductoDAO {
 
+    @Override
     public List<Producto> obtenerTodos() {
         List<Producto> listaProductos = new ArrayList<>();
         String consulta = "SELECT * FROM productos";
 
-        // Obtenemos la conexión afuera del try para que no se cierre
+        // Obtenemos la conexión (Patrón Singleton)
         Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
 
         try (Statement sentencia = conexion.createStatement();
@@ -27,6 +28,7 @@ public class ProductoDAOImpl implements ProductoDAO{
                         resultado.getInt("id_producto"),
                         resultado.getString("codigo"),
                         resultado.getString("nombre"),
+                        resultado.getString("descripcion"),
                         resultado.getDouble("precio_venta"),
                         resultado.getInt("stock_actual")
                 );
@@ -38,25 +40,85 @@ public class ProductoDAOImpl implements ProductoDAO{
         return listaProductos;
     }
 
-
-    // Métodos del CRUD
     @Override
     public boolean crear(Producto entidad) {
-        return false;
+        // Consulta SQL actualizada para incluir la descripción
+        String consulta = "INSERT INTO productos (codigo, nombre, descripcion, precio_venta, precio_compra, stock_actual) VALUES (?, ?, ?, ?, 0.0, ?)";
+
+        Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
+
+        try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(consulta)) {
+            sentencia.setString(1, entidad.getCodigo());
+            sentencia.setString(2, entidad.getNombre());
+            sentencia.setString(3, entidad.getDescripcion());
+            sentencia.setDouble(4, entidad.getPrecioVenta());
+            sentencia.setInt(5, entidad.getStockActual());
+            int filasAfectadas = sentencia.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException excepcion) {
+            System.err.println("Error al guardar el producto en BD: " + excepcion.getMessage());
+            return false;
+        }
     }
 
     @Override
     public Producto obtenerPorId(int id) {
-        return null;
+        Producto productoEncontrado = null;
+        String consulta = "SELECT * FROM productos WHERE id_producto = ?";
+        Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
+
+        try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(consulta)) {
+            sentencia.setInt(1, id);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                if (resultado.next()) {
+                    productoEncontrado = new Producto(
+                            resultado.getInt("id_producto"),
+                            resultado.getString("codigo"),
+                            resultado.getString("nombre"),
+                            resultado.getString("descripcion"),
+                            resultado.getDouble("precio_venta"),
+                            resultado.getInt("stock_actual")
+                    );
+                }
+            }
+        } catch (SQLException excepcion) {
+            System.err.println("Error al buscar por ID: " + excepcion.getMessage());
+        }
+        return productoEncontrado;
     }
 
     @Override
     public boolean actualizar(Producto entidad) {
-        return false;
+        // Consulta SQL actualizada del UPDATE
+        String consulta = "UPDATE productos SET nombre = ?, descripcion = ?, precio_venta = ?, stock_actual = ? WHERE codigo = ?";
+        Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
+
+        try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(consulta)) {
+            sentencia.setString(1, entidad.getNombre());
+            sentencia.setString(2, entidad.getDescripcion());
+            sentencia.setDouble(3, entidad.getPrecioVenta());
+            sentencia.setInt(4, entidad.getStockActual());
+            sentencia.setString(5, entidad.getCodigo()); // Usamos el código como identificador
+
+            return sentencia.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar: " + e.getMessage());
+            return false;
+        }
     }
 
     @Override
     public boolean eliminar(int id) {
-        return false;
+        String consulta = "DELETE FROM productos WHERE id_producto = ?";
+        Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
+
+        try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(consulta)) {
+            sentencia.setInt(1, id);
+            return sentencia.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar: " + e.getMessage());
+            return false;
+        }
     }
 }
