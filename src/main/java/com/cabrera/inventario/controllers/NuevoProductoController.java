@@ -61,13 +61,15 @@ public class NuevoProductoController {
             // Validamos que no exista stock negativo
             if (stock < 0) {
                 mostrarAlerta("Error de Validación", "El stock actual no puede ser un valor negativo.", Alert.AlertType.WARNING);
+                return;
             }
 
             // Validación de duplicados en la base de datos
             for (Producto p: productoDAO.obtenerTodos()) {
-                if (p.getCodigo().equalsIgnoreCase(codigo) || p.getNombre().equalsIgnoreCase(nombre))
-                mostrarAlerta("Producto Duplicado", "Ya existe un producto registrado con ese Código o Nombre.", Alert.AlertType.ERROR);
-                return;
+                if (p.getCodigo().equalsIgnoreCase(codigo) || p.getNombre().equalsIgnoreCase(nombre)) {
+                    mostrarAlerta("Producto Duplicado", "Ya existe un producto registrado con ese Código o Nombre.", Alert.AlertType.ERROR);
+                    return;
+                }
             }
 
             // Creamos el objeto si pasa todas las validaciones

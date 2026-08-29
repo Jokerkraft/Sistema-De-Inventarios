@@ -1,31 +1,45 @@
 package com.cabrera.inventario.util;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class ConexionBaseDatos {
 
-    // Instancia estática privada (Patrón Singleton)
     private static ConexionBaseDatos instancia;
     private Connection conexion;
-
-    // Credenciales de la base de datos MySQL
-    private static final String URL = "jdbc:mysql://localhost:3307/sistema_inventarios";
-    private static final String USUARIO = "root";
-    private static final String CONTRASENA = "admin";
+    private static final String PROPERTIES_FILE = "database.properties";
 
     private ConexionBaseDatos() {
         try {
-            // Establecer la conexión con JDBC
-            this.conexion = DriverManager.getConnection(URL, USUARIO, CONTRASENA);
+            Properties propiedades = cargarPropiedades();
+            String url = propiedades.getProperty("db.url");
+            String usuario = propiedades.getProperty("db.user");
+            String contrasena = propiedades.getProperty("db.password");
+
+            this.conexion = DriverManager.getConnection(url, usuario, contrasena);
             System.out.println("Conexión exitosa a la base de datos");
         } catch (SQLException e) {
-            System.err.println("Conexión fallida a la base de datos");
+            System.err.println("Conexión fallida a la base de datos: " + e.getMessage());
         }
     }
 
-    // Método estático para obtener la única instancia
+    private Properties cargarPropiedades() {
+        Properties propiedades = new Properties();
+        try (InputStream entrada = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
+            if (entrada == null) {
+                System.err.println("No se encontró el archivo " + PROPERTIES_FILE);
+                return propiedades;
+            }
+            propiedades.load(entrada);
+        } catch (Exception e) {
+            System.err.println("Error al cargar propiedades: " + e.getMessage());
+        }
+        return propiedades;
+    }
+
     public static ConexionBaseDatos obtenerInstancia() {
         if (instancia == null) {
             instancia = new ConexionBaseDatos();
@@ -33,12 +47,10 @@ public class ConexionBaseDatos {
         return instancia;
     }
 
-    // Método para obtener el objeto Connection y hacer consultas
     public Connection obtenerConexion() {
         return conexion;
     }
 
-    // Método para cerrar la conexión de forma segura
     public void cerrarConexion() {
         if (conexion != null) {
             try {

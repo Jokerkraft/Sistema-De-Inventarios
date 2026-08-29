@@ -74,6 +74,13 @@ public class LoginController {
         }
     }
 
+    @FXML
+    void salirAplicacion(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.close();
+        javafx.application.Platform.exit();
+    }
+
     // Método auxiliar para generar las alertas en JavaFX
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);

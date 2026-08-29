@@ -84,6 +84,25 @@ public class MenuPrincipalController {
     }
 
     @FXML
+    void abrirVentanaProveedores(ActionEvent event) {
+        try {
+            FXMLLoader cargador = new FXMLLoader(getClass().getResource("/com/cabrera/inventario/views/Proveedores.fxml"));
+            Parent raiz = cargador.load();
+
+            Stage ventanaProveedores = new Stage();
+            ventanaProveedores.setTitle("Proveedores");
+            ventanaProveedores.setScene(new Scene(raiz));
+            ventanaProveedores.initModality(Modality.APPLICATION_MODAL);
+            ventanaProveedores.setResizable(false);
+            ventanaProveedores.showAndWait();
+
+        } catch (IOException e) {
+            System.err.println("Error al abrir la ventana de proveedores: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
     void cerrarSesion(ActionEvent event) {
         try {
             // Cargamos la vista del Login nuevamente

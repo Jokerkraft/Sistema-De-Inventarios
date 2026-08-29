@@ -17,10 +17,12 @@ public class SistemaInventarios extends Application {
                 )
         );
 
-        Scene scene = new Scene(fxmlLoader.load(), 600, 400);
+        Scene scene = new Scene(fxmlLoader.load(), 720, 420);
 
         stage.setTitle("Sistema de Inventarios");
         stage.setScene(scene);
+        stage.setResizable(false);
+        stage.sizeToScene();
         stage.show();
     }
 }

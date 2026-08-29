@@ -6,18 +6,25 @@ public class Producto {
     private String codigo;
     private String nombre;
     private String descripcion;
+    private double precioCompra;
     private double precioVenta;
     private int stockActual;
 
     // Constructor vacío
     public Producto() {}
 
-    // Constructor con todos los parámetros
+    // Constructor con los parámetros usados por la aplicación
     public Producto(int idProducto, String codigo, String nombre, String descripcion, double precioVenta, int stockActual) {
+        this(idProducto, codigo, nombre, descripcion, 0.0, precioVenta, stockActual);
+    }
+
+    // Constructor completo con Precio Compra
+    public Producto(int idProducto, String codigo, String nombre, String descripcion, double precioCompra, double precioVenta, int stockActual) {
         this.idProducto = idProducto;
         this.codigo = codigo;
         this.nombre = nombre;
         this.descripcion = descripcion;
+        this.precioCompra = precioCompra;
         this.precioVenta = precioVenta;
         this.stockActual = stockActual;
     }
@@ -48,6 +55,22 @@ public class Producto {
         this.nombre = nombre;
     }
 
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public double getPrecioCompra() {
+        return precioCompra;
+    }
+
+    public void setPrecioCompra(double precioCompra) {
+        this.precioCompra = precioCompra;
+    }
+
     public double getPrecioVenta() {
         return precioVenta;
     }
@@ -62,13 +85,5 @@ public class Producto {
 
     public void setStockActual(int stockActual) {
         this.stockActual = stockActual;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
     }
 }
