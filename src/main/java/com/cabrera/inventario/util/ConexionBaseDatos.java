@@ -48,6 +48,9 @@ public class ConexionBaseDatos {
     }
 
     public Connection obtenerConexion() {
+        if (conexion == null) {
+            throw new IllegalStateException("No hay conexión con la base de datos. Revisa database.properties y MySQL");
+        }
         return conexion;
     }
 

@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS sistema_inventarios
+CREATE DATABASE IF NOT EXISTS sistema_inventarios;
 USE sistema_inventarios;
 
 -- USUARIOS

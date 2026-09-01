@@ -50,7 +50,9 @@ public class ProductoDAOImpl implements ProductoDAO {
 
         Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
 
+
         try {
+            conexion.setAutoCommit(false);
             try (java.sql.PreparedStatement stmtProducto = conexion.prepareStatement(consultaProducto)) {
                 stmtProducto.setString(1, entidad.getCodigo());
                 stmtProducto.setString(2, entidad.getNombre());
@@ -68,11 +70,24 @@ public class ProductoDAOImpl implements ProductoDAO {
                 stmtDetalle.setInt(4, entidad.getStockActual());
                 stmtDetalle.executeUpdate();
             }
+            conexion.commit();
             return true;
 
         } catch (SQLException excepcion) {
-            System.err.println("Error al guardar en múltiples tablas: " + excepcion.getMessage());
+            try {
+                conexion.rollback();
+            } catch (SQLException rollbackException) {
+                System.err.println("Error al revertir transacción: " + rollbackException.getMessage());
+            }
+
+            System.err.println("Error al guardar producto: " + excepcion.getMessage());
             return false;
+        } finally {
+            try {
+                conexion.setAutoCommit(true);
+            } catch (SQLException exception) {
+                System.err.println("Error al restaurar autocommit: " + exception.getMessage());
+            }
         }
     }
 
@@ -108,7 +123,7 @@ public class ProductoDAOImpl implements ProductoDAO {
 
     @Override
     public boolean actualizar(Producto entidad) {
-        String updateProducto = "UPDATE productos SET nombre = ?, descripcion = ?, precio_compra = ?, precio_venta = ? WHERE codigo = ?";
+        String updateProducto = "UPDATE productos SET nombre = ?, descripcion = ?, precio_compra = ?, precio_venta, stock_actual = ? = ? WHERE codigo = ?";
         String updateDetalle = "UPDATE detalleproductos SET precio_venta = ?, precio_compra = ?, stock_actual = ? WHERE codigo_producto = ?";
 
         Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
@@ -126,10 +141,10 @@ public class ProductoDAOImpl implements ProductoDAO {
                 stmtProd.setString(5, entidad.getCodigo());
                 stmtProd.executeUpdate();
 
-                stmtDet.setDouble(1, entidad.getPrecioVenta());
-                stmtDet.setDouble(2, entidad.getPrecioCompra());
-                stmtDet.setInt(3, entidad.getStockActual());
-                stmtDet.setString(4, entidad.getCodigo());
+                stmtDet.setDouble(3, entidad.getPrecioCompra());
+                stmtDet.setDouble(4, entidad.getPrecioVenta());
+                stmtDet.setInt(5, entidad.getStockActual());
+                stmtDet.setString(6, entidad.getCodigo());
                 stmtDet.executeUpdate();
 
                 conexion.commit();

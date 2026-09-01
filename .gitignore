@@ -36,5 +36,6 @@ build/
 .vscode/
 
 ### Mac OS ###
-.DS_Storesrc/main/resources/database.properties
-*.class
+.DS_Store
+src/main/resources/database.properties
+.env
