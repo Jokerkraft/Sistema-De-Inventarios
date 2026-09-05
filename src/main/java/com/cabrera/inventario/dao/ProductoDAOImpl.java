@@ -135,7 +135,7 @@ public class ProductoDAOImpl implements ProductoDAO {
 
     @Override
     public boolean actualizar(Producto entidad) {
-        String updateProducto = "UPDATE productos SET nombre = ?, descripcion = ?, precio_compra = ?, precio_venta, stock_actual = ? = ? WHERE codigo = ?";
+        String updateProducto = "UPDATE productos SET nombre = ?, descripcion = ?, precio_compra = ?, precio_venta = ?, stock_actual = ? WHERE codigo = ?";
         String updateDetalle = "UPDATE detalleproductos SET precio_venta = ?, precio_compra = ?, stock_actual = ? WHERE codigo_producto = ?";
 
         Connection conexion = proveedorConexion.get();
@@ -150,14 +150,21 @@ public class ProductoDAOImpl implements ProductoDAO {
                 stmtProd.setString(2, entidad.getDescripcion());
                 stmtProd.setDouble(3, entidad.getPrecioCompra());
                 stmtProd.setDouble(4, entidad.getPrecioVenta());
-                stmtProd.setString(5, entidad.getCodigo());
-                stmtProd.executeUpdate();
+                stmtProd.setInt(5, entidad.getStockActual());
+                stmtProd.setString(6, entidad.getCodigo());
+                if (stmtProd.executeUpdate() == 0) {
+                    conexion.rollback();
+                    return false;
+                }
 
-                stmtDet.setDouble(3, entidad.getPrecioCompra());
-                stmtDet.setDouble(4, entidad.getPrecioVenta());
-                stmtDet.setInt(5, entidad.getStockActual());
-                stmtDet.setString(6, entidad.getCodigo());
-                stmtDet.executeUpdate();
+                stmtDet.setDouble(1, entidad.getPrecioVenta());
+                stmtDet.setDouble(2, entidad.getPrecioCompra());
+                stmtDet.setInt(3, entidad.getStockActual());
+                stmtDet.setString(4, entidad.getCodigo());
+                if (stmtDet.executeUpdate() == 0) {
+                    conexion.rollback();
+                    return false;
+                }
 
                 conexion.commit();
                 return true;
