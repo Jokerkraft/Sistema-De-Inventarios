@@ -46,14 +46,18 @@ public class EditarProductoController {
             double precio = Double.parseDouble(txtPrecio.getText().replace(",", "."));
             int stock = Integer.parseInt(txtStock.getText());
 
-            // Actualizamos los datos del objeto
-            productoActual.setNombre(nombre);
-            productoActual.setDescripcion(descripcion);
-            productoActual.setPrecioVenta(precio);
-            productoActual.setStockActual(stock);
+            if (!Double.isFinite(precio) || precio < 0 || stock < 0) {
+                mostrarAlerta("Datos Inválidos", "El precio debe ser finito y no negativo; el stock no puede ser negativo.", Alert.AlertType.WARNING);
+                return;
+            }
+
+            // Conservamos el objeto original si la base de datos rechaza el cambio.
+            Producto productoEditado = new Producto(
+                    productoActual.getIdProducto(), productoActual.getCodigo(), nombre, descripcion,
+                    productoActual.getPrecioCompra(), precio, stock);
 
             // Llamamos al método actualizar del DAO
-            if (productoDAO.actualizar(productoActual)) {
+            if (productoDAO.actualizar(productoEditado)) {
                 mostrarAlerta("Éxito", "El producto se ha actualizado correctamente.", Alert.AlertType.INFORMATION);
                 cerrarVentana(event);
             } else {
