@@ -9,8 +9,20 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ProductoDAOImpl implements ProductoDAO {
+
+    private final Supplier<Connection> proveedorConexion;
+
+    public ProductoDAOImpl() {
+        this(() -> ConexionBaseDatos.obtenerInstancia().obtenerConexion());
+    }
+
+    // Permite probar el DAO con una conexión aislada de la base de la aplicación.
+    ProductoDAOImpl(Supplier<Connection> proveedorConexion) {
+        this.proveedorConexion = proveedorConexion;
+    }
 
     @Override
     public List<Producto> obtenerTodos() {
@@ -20,7 +32,7 @@ public class ProductoDAOImpl implements ProductoDAO {
                 "FROM productos p " +
                 "ORDER BY p.id_producto";
 
-        Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
+        Connection conexion = proveedorConexion.get();
 
         try (Statement sentencia = conexion.createStatement();
              ResultSet resultado = sentencia.executeQuery(consulta)) {
@@ -48,7 +60,7 @@ public class ProductoDAOImpl implements ProductoDAO {
         String consultaProducto = "INSERT INTO productos (codigo, nombre, descripcion, precio_compra, precio_venta, stock_actual) VALUES (?, ?, ?, ?, ?, ?)";
         String consultaDetalle = "INSERT INTO detalleproductos (codigo_producto, precio_venta, precio_compra, stock_actual) VALUES (?, ?, ?, ?)";
 
-        Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
+        Connection conexion = proveedorConexion.get();
 
 
         try {
@@ -98,7 +110,7 @@ public class ProductoDAOImpl implements ProductoDAO {
                 "p.precio_compra, p.precio_venta, p.stock_actual " +
                 "FROM productos p " +
                 "WHERE p.id_producto = ?";
-        Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
+        Connection conexion = proveedorConexion.get();
 
         try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(consulta)) {
             sentencia.setInt(1, id);
@@ -126,7 +138,7 @@ public class ProductoDAOImpl implements ProductoDAO {
         String updateProducto = "UPDATE productos SET nombre = ?, descripcion = ?, precio_compra = ?, precio_venta, stock_actual = ? = ? WHERE codigo = ?";
         String updateDetalle = "UPDATE detalleproductos SET precio_venta = ?, precio_compra = ?, stock_actual = ? WHERE codigo_producto = ?";
 
-        Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
+        Connection conexion = proveedorConexion.get();
 
         try {
             conexion.setAutoCommit(false);
@@ -168,7 +180,7 @@ public class ProductoDAOImpl implements ProductoDAO {
         String consultaObtenerCodigo = "SELECT codigo FROM productos WHERE id_producto = ?";
         String consultaEliminarDetalle = "DELETE FROM detalleproductos WHERE codigo_producto = ?";
         String consultaEliminarProducto = "DELETE FROM productos WHERE id_producto = ?";
-        Connection conexion = ConexionBaseDatos.obtenerInstancia().obtenerConexion();
+        Connection conexion = proveedorConexion.get();
 
         try {
             conexion.setAutoCommit(false);
