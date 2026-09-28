@@ -1,13 +1,13 @@
 # Base de datos con Docker
 
-La aplicacion se conecta a MySQL en localhost:3307. Docker ejecuta la base sin
-necesitar instalar MySQL como servicio de Windows.
+La aplicacion se conecta a MySQL en localhost:3307. Docker ayuda a ejecutar la base sin
+necesitar instalar MySQL como servicio de manera local.
 
-## Preparacion
+## Preparación
 
 1. Instala e inicia Docker Desktop.
 2. Deten el servicio local MySQL80: ambos servicios usan el puerto 3307.
-3. Copia `.env.example` como `.env` y cambia las contrasenas de ejemplo.
+3. Copia `.env.example` como `.env` y cambia las contraseñas de ejemplo.
 
 ## Inicio
 
