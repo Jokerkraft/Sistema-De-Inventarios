@@ -7,18 +7,16 @@ public class Compra {
     private int idProveedor;
     private String codigoCompra;
     private LocalDateTime fecha;
-    private double total;
     private String estado;
 
     public Compra() {
     }
 
-    public Compra(int idCompra, int idProveedor, String codigoCompra, LocalDateTime fecha, double total, String estado) {
+    public Compra(int idCompra, int idProveedor, String codigoCompra, LocalDateTime fecha, String estado) {
         this.idCompra = idCompra;
         this.idProveedor = idProveedor;
         this.codigoCompra = codigoCompra;
         this.fecha = fecha;
-        this.total = total;
         this.estado = estado;
     }
 
@@ -52,14 +50,6 @@ public class Compra {
 
     public void setFecha(LocalDateTime fecha) {
         this.fecha = fecha;
-    }
-
-    public double getTotal() {
-        return total;
-    }
-
-    public void setTotal(double total) {
-        this.total = total;
     }
 
     public String getEstado() {

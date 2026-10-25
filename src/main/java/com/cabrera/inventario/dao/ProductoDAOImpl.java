@@ -58,48 +58,19 @@ public class ProductoDAOImpl implements ProductoDAO {
     @Override
     public boolean crear(Producto entidad) {
         String consultaProducto = "INSERT INTO productos (codigo, nombre, descripcion, precio_compra, precio_venta, stock_actual) VALUES (?, ?, ?, ?, ?, ?)";
-        String consultaDetalle = "INSERT INTO detalleproductos (codigo_producto, precio_venta, precio_compra, stock_actual) VALUES (?, ?, ?, ?)";
-
         Connection conexion = proveedorConexion.get();
 
-
-        try {
-            conexion.setAutoCommit(false);
-            try (java.sql.PreparedStatement stmtProducto = conexion.prepareStatement(consultaProducto)) {
-                stmtProducto.setString(1, entidad.getCodigo());
-                stmtProducto.setString(2, entidad.getNombre());
-                stmtProducto.setString(3, entidad.getDescripcion());
-                stmtProducto.setDouble(4, entidad.getPrecioCompra());
-                stmtProducto.setDouble(5, entidad.getPrecioVenta());
-                stmtProducto.setInt(6, entidad.getStockActual());
-                stmtProducto.executeUpdate();
-            }
-
-            try (java.sql.PreparedStatement stmtDetalle = conexion.prepareStatement(consultaDetalle)) {
-                stmtDetalle.setString(1, entidad.getCodigo());
-                stmtDetalle.setDouble(2, entidad.getPrecioVenta());
-                stmtDetalle.setDouble(3, entidad.getPrecioCompra());
-                stmtDetalle.setInt(4, entidad.getStockActual());
-                stmtDetalle.executeUpdate();
-            }
-            conexion.commit();
-            return true;
-
+        try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(consultaProducto)) {
+            sentencia.setString(1, entidad.getCodigo());
+            sentencia.setString(2, entidad.getNombre());
+            sentencia.setString(3, entidad.getDescripcion());
+            sentencia.setDouble(4, entidad.getPrecioCompra());
+            sentencia.setDouble(5, entidad.getPrecioVenta());
+            sentencia.setInt(6, entidad.getStockActual());
+            return sentencia.executeUpdate() > 0;
         } catch (SQLException excepcion) {
-            try {
-                conexion.rollback();
-            } catch (SQLException rollbackException) {
-                System.err.println("Error al revertir transacción: " + rollbackException.getMessage());
-            }
-
             System.err.println("Error al guardar producto: " + excepcion.getMessage());
             return false;
-        } finally {
-            try {
-                conexion.setAutoCommit(true);
-            } catch (SQLException exception) {
-                System.err.println("Error al restaurar autocommit: " + exception.getMessage());
-            }
         }
     }
 
@@ -135,104 +106,35 @@ public class ProductoDAOImpl implements ProductoDAO {
 
     @Override
     public boolean actualizar(Producto entidad) {
-        String updateProducto = "UPDATE productos SET nombre = ?, descripcion = ?, precio_compra = ?, precio_venta = ?, stock_actual = ? WHERE codigo = ?";
-        String updateDetalle = "UPDATE detalleproductos SET precio_venta = ?, precio_compra = ?, stock_actual = ? WHERE codigo_producto = ?";
+        String updateProducto = "UPDATE productos SET nombre = ?, descripcion = ?, precio_compra = ?, precio_venta = ?, stock_actual = ? WHERE id_producto = ?";
 
         Connection conexion = proveedorConexion.get();
 
-        try {
-            conexion.setAutoCommit(false);
-
-            try (java.sql.PreparedStatement stmtProd = conexion.prepareStatement(updateProducto);
-                 java.sql.PreparedStatement stmtDet = conexion.prepareStatement(updateDetalle)) {
-
-                stmtProd.setString(1, entidad.getNombre());
-                stmtProd.setString(2, entidad.getDescripcion());
-                stmtProd.setDouble(3, entidad.getPrecioCompra());
-                stmtProd.setDouble(4, entidad.getPrecioVenta());
-                stmtProd.setInt(5, entidad.getStockActual());
-                stmtProd.setString(6, entidad.getCodigo());
-                if (stmtProd.executeUpdate() == 0) {
-                    conexion.rollback();
-                    return false;
-                }
-
-                stmtDet.setDouble(1, entidad.getPrecioVenta());
-                stmtDet.setDouble(2, entidad.getPrecioCompra());
-                stmtDet.setInt(3, entidad.getStockActual());
-                stmtDet.setString(4, entidad.getCodigo());
-                if (stmtDet.executeUpdate() == 0) {
-                    conexion.rollback();
-                    return false;
-                }
-
-                conexion.commit();
-                return true;
-
-            } catch (SQLException e) {
-                conexion.rollback();
-                throw e;
-            } finally {
-                conexion.setAutoCommit(true);
-            }
-
+        try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(updateProducto)) {
+            sentencia.setString(1, entidad.getNombre());
+            sentencia.setString(2, entidad.getDescripcion());
+            sentencia.setDouble(3, entidad.getPrecioCompra());
+            sentencia.setDouble(4, entidad.getPrecioVenta());
+            sentencia.setInt(5, entidad.getStockActual());
+            sentencia.setInt(6, entidad.getIdProducto());
+            return sentencia.executeUpdate() > 0;
         } catch (SQLException excepcion) {
-            System.err.println("Error al actualizar en múltiples tablas: " + excepcion.getMessage());
+            System.err.println("Error al actualizar producto: " + excepcion.getMessage());
             return false;
         }
     }
 
     @Override
     public boolean eliminar(int id) {
-        String consultaObtenerCodigo = "SELECT codigo FROM productos WHERE id_producto = ?";
-        String consultaEliminarDetalle = "DELETE FROM detalleproductos WHERE codigo_producto = ?";
         String consultaEliminarProducto = "DELETE FROM productos WHERE id_producto = ?";
         Connection conexion = proveedorConexion.get();
 
-        try {
-            conexion.setAutoCommit(false);
-
-            String codigoProducto = null;
-            try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(consultaObtenerCodigo)) {
-                sentencia.setInt(1, id);
-                try (ResultSet resultado = sentencia.executeQuery()) {
-                    if (resultado.next()) {
-                        codigoProducto = resultado.getString("codigo");
-                    }
-                }
-            }
-
-            if (codigoProducto == null) {
-                conexion.rollback();
-                return false;
-            }
-
-            try (java.sql.PreparedStatement sentenciaDetalle = conexion.prepareStatement(consultaEliminarDetalle)) {
-                sentenciaDetalle.setString(1, codigoProducto);
-                sentenciaDetalle.executeUpdate();
-            }
-
-            try (java.sql.PreparedStatement sentenciaProducto = conexion.prepareStatement(consultaEliminarProducto)) {
-                sentenciaProducto.setInt(1, id);
-                int resultado = sentenciaProducto.executeUpdate();
-                conexion.commit();
-                return resultado > 0;
-            }
-
-        } catch (SQLException e) {
-            try {
-                conexion.rollback();
-            } catch (SQLException rollbackException) {
-                System.err.println("Error en rollback: " + rollbackException.getMessage());
-            }
-            System.err.println("Error al eliminar: " + e.getMessage());
+        try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(consultaEliminarProducto)) {
+            sentencia.setInt(1, id);
+            return sentencia.executeUpdate() > 0;
+        } catch (SQLException excepcion) {
+            System.err.println("Error al eliminar producto: " + excepcion.getMessage());
             return false;
-        } finally {
-            try {
-                conexion.setAutoCommit(true);
-            } catch (SQLException e) {
-                System.err.println("Error al restaurar autocommit: " + e.getMessage());
-            }
         }
     }
 }

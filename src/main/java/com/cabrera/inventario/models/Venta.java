@@ -7,19 +7,17 @@ public class Venta {
     private int idCliente;
     private String codigoVenta;
     private LocalDateTime fecha;
-    private double total;
     private String estado;
     private String metodoPago;
 
     public Venta() {
     }
 
-    public Venta(int idVenta, int idCliente, String codigoVenta, LocalDateTime fecha, double total, String estado, String metodoPago) {
+    public Venta(int idVenta, int idCliente, String codigoVenta, LocalDateTime fecha, String estado, String metodoPago) {
         this.idVenta = idVenta;
         this.idCliente = idCliente;
         this.codigoVenta = codigoVenta;
         this.fecha = fecha;
-        this.total = total;
         this.estado = estado;
         this.metodoPago = metodoPago;
     }
@@ -54,14 +52,6 @@ public class Venta {
 
     public void setFecha(LocalDateTime fecha) {
         this.fecha = fecha;
-    }
-
-    public double getTotal() {
-        return total;
-    }
-
-    public void setTotal(double total) {
-        this.total = total;
     }
 
     public String getEstado() {

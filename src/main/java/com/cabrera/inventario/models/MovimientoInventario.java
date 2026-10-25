@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public class MovimientoInventario {
     private int idMovimiento;
     private String tipo;
-    private String codigoProducto;
+    private int idProducto;
     private int cantidad;
     private String motivo;
     private LocalDateTime fecha;
@@ -15,11 +15,11 @@ public class MovimientoInventario {
     public MovimientoInventario() {
     }
 
-    public MovimientoInventario(int idMovimiento, String tipo, String codigoProducto, int cantidad,
+    public MovimientoInventario(int idMovimiento, String tipo, int idProducto, int cantidad,
                                String motivo, LocalDateTime fecha, String referencia, int idUsuario) {
         this.idMovimiento = idMovimiento;
         this.tipo = tipo;
-        this.codigoProducto = codigoProducto;
+        this.idProducto = idProducto;
         this.cantidad = cantidad;
         this.motivo = motivo;
         this.fecha = fecha;
@@ -43,12 +43,12 @@ public class MovimientoInventario {
         this.tipo = tipo;
     }
 
-    public String getCodigoProducto() {
-        return codigoProducto;
+    public int getIdProducto() {
+        return idProducto;
     }
 
-    public void setCodigoProducto(String codigoProducto) {
-        this.codigoProducto = codigoProducto;
+    public void setIdProducto(int idProducto) {
+        this.idProducto = idProducto;
     }
 
     public int getCantidad() {

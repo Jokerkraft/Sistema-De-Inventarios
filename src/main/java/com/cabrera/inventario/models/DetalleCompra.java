@@ -1,31 +1,19 @@
 package com.cabrera.inventario.models;
 
 public class DetalleCompra {
-    private int idDetalleCompra;
     private int idCompra;
-    private String codigoProducto;
+    private int idProducto;
     private int cantidad;
     private double precioUnitario;
-    private double subtotal;
 
     public DetalleCompra() {
     }
 
-    public DetalleCompra(int idDetalleCompra, int idCompra, String codigoProducto, int cantidad, double precioUnitario, double subtotal) {
-        this.idDetalleCompra = idDetalleCompra;
+    public DetalleCompra(int idCompra, int idProducto, int cantidad, double precioUnitario) {
         this.idCompra = idCompra;
-        this.codigoProducto = codigoProducto;
+        this.idProducto = idProducto;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
-        this.subtotal = subtotal;
-    }
-
-    public int getIdDetalleCompra() {
-        return idDetalleCompra;
-    }
-
-    public void setIdDetalleCompra(int idDetalleCompra) {
-        this.idDetalleCompra = idDetalleCompra;
     }
 
     public int getIdCompra() {
@@ -36,12 +24,12 @@ public class DetalleCompra {
         this.idCompra = idCompra;
     }
 
-    public String getCodigoProducto() {
-        return codigoProducto;
+    public int getIdProducto() {
+        return idProducto;
     }
 
-    public void setCodigoProducto(String codigoProducto) {
-        this.codigoProducto = codigoProducto;
+    public void setIdProducto(int idProducto) {
+        this.idProducto = idProducto;
     }
 
     public int getCantidad() {
@@ -61,10 +49,6 @@ public class DetalleCompra {
     }
 
     public double getSubtotal() {
-        return subtotal;
-    }
-
-    public void setSubtotal(double subtotal) {
-        this.subtotal = subtotal;
+        return cantidad * precioUnitario;
     }
 }

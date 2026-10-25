@@ -13,27 +13,8 @@ import java.util.List;
 
 public class ProveedorDAOImpl implements ProveedorDAO {
 
-    private static final String SQL_CREAR_TABLA = "CREATE TABLE IF NOT EXISTS proveedores (" +
-            "id_proveedor INT NOT NULL AUTO_INCREMENT, " +
-            "nombre VARCHAR(150) NOT NULL, " +
-            "contacto VARCHAR(150) DEFAULT NULL, " +
-            "telefono VARCHAR(50) DEFAULT NULL, " +
-            "email VARCHAR(150) DEFAULT NULL, " +
-            "direccion VARCHAR(255) DEFAULT NULL, " +
-            "activo BOOLEAN NOT NULL DEFAULT TRUE, " +
-            "PRIMARY KEY (id_proveedor) " +
-            ")";
-
     private Connection obtenerConexion() {
         return ConexionBaseDatos.obtenerInstancia().obtenerConexion();
-    }
-
-    private void asegurarTablaExiste() {
-        try (Statement sentencia = obtenerConexion().createStatement()) {
-            sentencia.executeUpdate(SQL_CREAR_TABLA);
-        } catch (SQLException excepcion) {
-            System.err.println("Error al asegurar la tabla de proveedores: " + excepcion.getMessage());
-        }
     }
 
     private Proveedor mapearProveedor(ResultSet resultado) throws SQLException {
@@ -50,7 +31,6 @@ public class ProveedorDAOImpl implements ProveedorDAO {
 
     @Override
     public boolean crear(Proveedor entidad) {
-        asegurarTablaExiste();
         String consulta = "INSERT INTO proveedores (nombre, contacto, telefono, email, direccion, activo) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement sentencia = obtenerConexion().prepareStatement(consulta)) {
@@ -69,7 +49,6 @@ public class ProveedorDAOImpl implements ProveedorDAO {
 
     @Override
     public Proveedor obtenerPorId(int id) {
-        asegurarTablaExiste();
         String consulta = "SELECT * FROM proveedores WHERE id_proveedor = ?";
 
         try (PreparedStatement sentencia = obtenerConexion().prepareStatement(consulta)) {
@@ -87,7 +66,6 @@ public class ProveedorDAOImpl implements ProveedorDAO {
 
     @Override
     public List<Proveedor> obtenerTodos() {
-        asegurarTablaExiste();
         List<Proveedor> proveedores = new ArrayList<>();
         String consulta = "SELECT * FROM proveedores ORDER BY id_proveedor";
 
@@ -105,7 +83,6 @@ public class ProveedorDAOImpl implements ProveedorDAO {
 
     @Override
     public boolean actualizar(Proveedor entidad) {
-        asegurarTablaExiste();
         String consulta = "UPDATE proveedores SET nombre = ?, contacto = ?, telefono = ?, email = ?, direccion = ?, activo = ? WHERE id_proveedor = ?";
 
         try (PreparedStatement sentencia = obtenerConexion().prepareStatement(consulta)) {
@@ -125,7 +102,6 @@ public class ProveedorDAOImpl implements ProveedorDAO {
 
     @Override
     public boolean eliminar(int id) {
-        asegurarTablaExiste();
         String consulta = "DELETE FROM proveedores WHERE id_proveedor = ?";
 
         try (PreparedStatement sentencia = obtenerConexion().prepareStatement(consulta)) {

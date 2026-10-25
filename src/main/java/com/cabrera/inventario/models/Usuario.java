@@ -12,7 +12,6 @@ public class Usuario {
 
     }
 
-    // Constructor con todos los parámetros
     public Usuario(int idUsuario, String nombreCompleto, String nombreUsuario, String contrasena, String rol) {
         this.idUsuario = idUsuario;
         this.nombreCompleto = nombreCompleto;
@@ -21,7 +20,6 @@ public class Usuario {
         this.rol = rol;
     }
 
-    // Getters y Setters
     public int getIdUsuario() {
         return idUsuario;
     }

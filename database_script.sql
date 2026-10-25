@@ -5,11 +5,12 @@ USE sistema_inventarios;
 CREATE TABLE IF NOT EXISTS usuarios (
     id_usuario INT NOT NULL AUTO_INCREMENT,
     nombre_completo VARCHAR(150) NOT NULL,
-    username VARCHAR(100) NOT NULL UNIQUE,
+    username VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
     rol VARCHAR(50) NOT NULL DEFAULT 'ADMIN',
     activo BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id_usuario)
+    CONSTRAINT PK_usuarios PRIMARY KEY (id_usuario),
+    CONSTRAINT UQ_usuarios_username UNIQUE (username)
 );
 
 -- CATEGORÍAS
@@ -18,8 +19,8 @@ CREATE TABLE IF NOT EXISTS categorias (
     nombre VARCHAR(100) NOT NULL,
     descripcion TEXT,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id_categoria),
-    UNIQUE KEY uk_categoria_nombre (nombre)
+    CONSTRAINT PK_categorias PRIMARY KEY (id_categoria),
+    CONSTRAINT UQ_categorias_nombre UNIQUE (nombre)
 );
 
 
@@ -32,7 +33,7 @@ CREATE TABLE IF NOT EXISTS proveedores (
     email VARCHAR(150) DEFAULT NULL,
     direccion VARCHAR(255) DEFAULT NULL,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id_proveedor)
+    CONSTRAINT PK_proveedores PRIMARY KEY (id_proveedor)
 );
 
 
@@ -46,13 +47,13 @@ CREATE TABLE IF NOT EXISTS clientes (
     email VARCHAR(150) DEFAULT NULL,
     direccion VARCHAR(255) DEFAULT NULL,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id_cliente)
+    CONSTRAINT PK_clientes PRIMARY KEY (id_cliente)
 );
 
 -- PRODUCTOS
 CREATE TABLE IF NOT EXISTS productos (
     id_producto INT NOT NULL AUTO_INCREMENT,
-    codigo VARCHAR(50) NOT NULL UNIQUE,
+    codigo VARCHAR(50) NOT NULL,
     nombre VARCHAR(100) NOT NULL,
     descripcion TEXT,
     precio_compra DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -61,58 +62,47 @@ CREATE TABLE IF NOT EXISTS productos (
     id_categoria INT DEFAULT NULL,
     id_proveedor INT DEFAULT NULL,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id_producto),
-    CONSTRAINT chk_stock_productos CHECK (stock_actual >= 0),
-    CONSTRAINT fk_producto_categoria
+    CONSTRAINT PK_productos PRIMARY KEY (id_producto),
+    CONSTRAINT UQ_productos_codigo UNIQUE (codigo),
+    CONSTRAINT CK_productos_stock CHECK (stock_actual >= 0),
+    CONSTRAINT CK_productos_precio_compra CHECK (precio_compra >= 0),
+    CONSTRAINT CK_productos_precio_venta CHECK (precio_venta >= 0),
+    CONSTRAINT FK_productos_categoria
         FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria)
         ON UPDATE CASCADE ON DELETE SET NULL,
-    CONSTRAINT fk_producto_proveedor
+    CONSTRAINT FK_productos_proveedor
         FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor)
         ON UPDATE CASCADE ON DELETE SET NULL
-);
-
--- DETALLE PRODUCTOS
-CREATE TABLE IF NOT EXISTS detalleproductos (
-    id_detalle INT NOT NULL AUTO_INCREMENT,
-    codigo_producto VARCHAR(50) NOT NULL,
-    precio_venta DECIMAL(10,2) NOT NULL,
-    precio_compra DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    stock_actual INT NOT NULL DEFAULT 0,
-    PRIMARY KEY (id_detalle),
-    KEY idx_detalle_codigo_producto (codigo_producto),
-    CONSTRAINT fk_detalle_producto
-        FOREIGN KEY (codigo_producto) REFERENCES productos(codigo)
-        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- COMPRAS
 CREATE TABLE IF NOT EXISTS compras (
     id_compra INT NOT NULL AUTO_INCREMENT,
     id_proveedor INT NOT NULL,
-    codigo_compra VARCHAR(50) NOT NULL UNIQUE,
+    codigo_compra VARCHAR(50) NOT NULL,
     fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    total DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     estado VARCHAR(30) NOT NULL DEFAULT 'PENDIENTE',
-    PRIMARY KEY (id_compra),
-    CONSTRAINT fk_compra_proveedor
+    CONSTRAINT PK_compras PRIMARY KEY (id_compra),
+    CONSTRAINT UQ_compras_codigo UNIQUE (codigo_compra),
+    CONSTRAINT FK_compras_proveedor
         FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor)
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 -- DETALLE DE COMPRAS
 CREATE TABLE IF NOT EXISTS detalle_compras (
-    id_detalle_compra INT NOT NULL AUTO_INCREMENT,
     id_compra INT NOT NULL,
-    codigo_producto VARCHAR(50) NOT NULL,
+    id_producto INT NOT NULL,
     cantidad INT NOT NULL,
     precio_unitario DECIMAL(10,2) NOT NULL,
-    subtotal DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-    PRIMARY KEY (id_detalle_compra),
-    CONSTRAINT fk_detalle_compra_compra
+    CONSTRAINT PK2_detalle_compras PRIMARY KEY (id_compra, id_producto),
+    CONSTRAINT CK2_detalle_compras_cantidad CHECK (cantidad > 0),
+    CONSTRAINT CK2_detalle_compras_precio CHECK (precio_unitario >= 0),
+    CONSTRAINT FK2_detalle_compras_compra
         FOREIGN KEY (id_compra) REFERENCES compras(id_compra)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_detalle_compra_producto
-        FOREIGN KEY (codigo_producto) REFERENCES productos(codigo)
+    CONSTRAINT FK2_detalle_compras_producto
+        FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
         ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -120,31 +110,31 @@ CREATE TABLE IF NOT EXISTS detalle_compras (
 CREATE TABLE IF NOT EXISTS ventas (
     id_venta INT NOT NULL AUTO_INCREMENT,
     id_cliente INT NOT NULL,
-    codigo_venta VARCHAR(50) NOT NULL UNIQUE,
+    codigo_venta VARCHAR(50) NOT NULL,
     fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    total DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     estado VARCHAR(30) NOT NULL DEFAULT 'PENDIENTE',
-    metodo_pago VARCHAR(50) DEFAULT 'EFECTIVO',
-    PRIMARY KEY (id_venta),
-    CONSTRAINT fk_venta_cliente
+    metodo_pago VARCHAR(50) NOT NULL DEFAULT 'EFECTIVO',
+    CONSTRAINT PK_ventas PRIMARY KEY (id_venta),
+    CONSTRAINT UQ_ventas_codigo UNIQUE (codigo_venta),
+    CONSTRAINT FK_ventas_cliente
         FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
         ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 -- DETALLE DE VENTAS
 CREATE TABLE IF NOT EXISTS detalle_ventas (
-    id_detalle_venta INT NOT NULL AUTO_INCREMENT,
     id_venta INT NOT NULL,
-    codigo_producto VARCHAR(50) NOT NULL,
+    id_producto INT NOT NULL,
     cantidad INT NOT NULL,
     precio_unitario DECIMAL(10,2) NOT NULL,
-    subtotal DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-    PRIMARY KEY (id_detalle_venta),
-    CONSTRAINT fk_detalle_venta_venta
+    CONSTRAINT PK2_detalle_ventas PRIMARY KEY (id_venta, id_producto),
+    CONSTRAINT CK2_detalle_ventas_cantidad CHECK (cantidad > 0),
+    CONSTRAINT CK2_detalle_ventas_precio CHECK (precio_unitario >= 0),
+    CONSTRAINT FK2_detalle_ventas_venta
         FOREIGN KEY (id_venta) REFERENCES ventas(id_venta)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_detalle_venta_producto
-        FOREIGN KEY (codigo_producto) REFERENCES productos(codigo)
+    CONSTRAINT FK2_detalle_ventas_producto
+        FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
         ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -152,17 +142,18 @@ CREATE TABLE IF NOT EXISTS detalle_ventas (
 CREATE TABLE IF NOT EXISTS movimientos (
     id_movimiento INT NOT NULL AUTO_INCREMENT,
     tipo VARCHAR(30) NOT NULL,
-    codigo_producto VARCHAR(50) NOT NULL,
+    id_producto INT NOT NULL,
     cantidad INT NOT NULL,
     motivo VARCHAR(150) DEFAULT NULL,
     fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     referencia VARCHAR(100) DEFAULT NULL,
     id_usuario INT DEFAULT NULL,
-    PRIMARY KEY (id_movimiento),
-    CONSTRAINT fk_movimiento_producto
-        FOREIGN KEY (codigo_producto) REFERENCES productos(codigo)
+    CONSTRAINT PK_movimientos PRIMARY KEY (id_movimiento),
+    CONSTRAINT CK_movimientos_cantidad CHECK (cantidad <> 0),
+    CONSTRAINT FK_movimientos_producto
+        FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
         ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_movimiento_usuario
+    CONSTRAINT FK_movimientos_usuario
         FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
         ON UPDATE CASCADE ON DELETE SET NULL
 );
