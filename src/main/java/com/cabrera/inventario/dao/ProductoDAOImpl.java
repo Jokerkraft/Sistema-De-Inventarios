@@ -11,19 +11,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+// Implementa las operaciones de acceso a los productos almacenados en MySQL
 public class ProductoDAOImpl implements ProductoDAO {
 
+    // Proporciona la conexión utilizada por las consultas del DAO
     private final Supplier<Connection> proveedorConexion;
 
+    // Configura el DAO para utilizar la conexión compartida de la aplicación
     public ProductoDAOImpl() {
         this(() -> ConexionBaseDatos.obtenerInstancia().obtenerConexion());
     }
 
-    // Permite probar el DAO con una conexión aislada de la base de la aplicación.
+    // Permite probar el DAO con una conexión aislada de la base de la aplicación
     ProductoDAOImpl(Supplier<Connection> proveedorConexion) {
         this.proveedorConexion = proveedorConexion;
     }
 
+    // Recupera todos los productos y los ordena por su identificador
     @Override
     public List<Producto> obtenerTodos() {
         List<Producto> listaProductos = new ArrayList<>();
@@ -55,6 +59,7 @@ public class ProductoDAOImpl implements ProductoDAO {
         return listaProductos;
     }
 
+    // Inserta un producto nuevo con sus datos y valores de inventario
     @Override
     public boolean crear(Producto entidad) {
         String consultaProducto = "INSERT INTO productos (codigo, nombre, descripcion, precio_compra, precio_venta, stock_actual) VALUES (?, ?, ?, ?, ?, ?)";
@@ -74,6 +79,7 @@ public class ProductoDAOImpl implements ProductoDAO {
         }
     }
 
+    // Busca un producto por su identificador; devuelve null si no existe
     @Override
     public Producto obtenerPorId(int id) {
         Producto productoEncontrado = null;
@@ -104,6 +110,7 @@ public class ProductoDAOImpl implements ProductoDAO {
         return productoEncontrado;
     }
 
+    // Actualiza los datos y el stock del producto identificado por su ID
     @Override
     public boolean actualizar(Producto entidad) {
         String updateProducto = "UPDATE productos SET nombre = ?, descripcion = ?, precio_compra = ?, precio_venta = ?, stock_actual = ? WHERE id_producto = ?";
@@ -124,6 +131,7 @@ public class ProductoDAOImpl implements ProductoDAO {
         }
     }
 
+    // Elimina el producto que corresponde al identificador recibido
     @Override
     public boolean eliminar(int id) {
         String consultaEliminarProducto = "DELETE FROM productos WHERE id_producto = ?";

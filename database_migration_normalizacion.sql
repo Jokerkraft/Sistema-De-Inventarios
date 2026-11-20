@@ -1,7 +1,3 @@
--- MIGRACIÓN ÚNICA: esquema anterior -> esquema normalizado.
--- Ejecuta una copia de seguridad antes de usarla.
--- Requiere MySQL 8.0.16 o posterior para CHECK constraints.
-
 USE sistema_inventarios;
 
 -- Los totales y subtotales se calculan desde cantidad * precio_unitario.

@@ -295,4 +295,4 @@ proveedores.
 6. Incorporar permisos por rol y pruebas automatizadas para los DAO.
 
 # API usada para el ejemplo
-- API disponible en: https://fakestoreapi.com
+- API disponible en: https://fakestoreapi.comß

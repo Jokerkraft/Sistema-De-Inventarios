@@ -14,7 +14,7 @@ public class PrecioAPIStrategy implements PrecioStrategy{
 
         try {
 
-            // Usamos FakeStoreAPI (una API pública y gratuita) para simular la búsqueda de productos
+            // Usamos FakeStoreAPI (una API pública y gratuita que encontramos en internet) para simular la búsqueda de productos
 
             HttpClient cliente = HttpClient.newHttpClient();
             HttpRequest peticion = HttpRequest.newBuilder()

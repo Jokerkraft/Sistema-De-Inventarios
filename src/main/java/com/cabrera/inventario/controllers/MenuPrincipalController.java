@@ -151,27 +151,27 @@ public class MenuPrincipalController {
 
     @FXML
     void editarProducto(ActionEvent event) {
-        // 1. Obtenemos el producto seleccionado
+        // Obtenemos el producto seleccionado
         Producto seleccionado = tablaProductos.getSelectionModel().getSelectedItem();
 
         if (seleccionado != null) {
             try {
-                // 2. Cargamos la ventana de edición
+                // Cargamos la ventana de edición
                 FXMLLoader cargador = new FXMLLoader(getClass().getResource("/com/cabrera/inventario/views/EditarProducto.fxml"));
                 Parent raiz = cargador.load();
 
-                // 3. Le pasamos el producto seleccionado al nuevo controlador para que llene los campos
+                // Le pasamos el producto seleccionado al nuevo controlador para que llene los campos
                 com.cabrera.inventario.controllers.EditarProductoController controlador = cargador.getController();
                 controlador.cargarProducto(seleccionado);
 
-                // 4. Mostramos la ventana modal
+                // Mostramos la ventana modal
                 Stage ventana = new Stage();
                 ventana.setTitle("Editar Producto");
                 ventana.setScene(new Scene(raiz));
                 ventana.initModality(Modality.APPLICATION_MODAL);
                 ventana.showAndWait();
 
-                // 5. Recargamos la tabla al cerrar
+                // Recargamos la tabla al cerrar
                 cargarDatosTabla();
 
             } catch (java.io.IOException e) {

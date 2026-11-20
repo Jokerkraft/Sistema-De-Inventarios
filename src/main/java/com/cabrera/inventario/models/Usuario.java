@@ -6,6 +6,7 @@ public class Usuario {
     private String nombreUsuario; // El username para el Login
     private String contrasena; // Aqui se guarda el hash SHA-1
     private String rol;
+    private boolean activo;
 
     // Constructor vacío (Para traer datos de la base de datos)
     public Usuario() {
@@ -13,11 +14,16 @@ public class Usuario {
     }
 
     public Usuario(int idUsuario, String nombreCompleto, String nombreUsuario, String contrasena, String rol) {
+        this(idUsuario, nombreCompleto, nombreUsuario, contrasena, rol, true);
+    }
+
+    public Usuario(int idUsuario, String nombreCompleto, String nombreUsuario, String contrasena, String rol, boolean activo) {
         this.idUsuario = idUsuario;
         this.nombreCompleto = nombreCompleto;
         this.nombreUsuario = nombreUsuario;
         this.contrasena = contrasena;
         this.rol = rol;
+        this.activo = activo;
     }
 
     public int getIdUsuario() {
@@ -58,5 +64,13 @@ public class Usuario {
 
     public void setRol(String rol) {
         this.rol = rol;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 }
