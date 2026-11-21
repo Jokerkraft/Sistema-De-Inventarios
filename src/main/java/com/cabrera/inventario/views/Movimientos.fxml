@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="620.0" prefWidth="1000.0" spacing="14.0"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.cabrera.inventario.controllers.MovimientoController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <children>
+        <Label text="Movimientos de Inventario">
+            <font>
+                <Font name="System Bold" size="20.0" />
+            </font>
+        </Label>
+        <Label fx:id="lblUsuario" text="Usuario no identificado" />
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <children>
+                <ComboBox fx:id="cmbProducto" prefWidth="280.0" promptText="Producto" />
+                <ComboBox fx:id="cmbTipo" prefWidth="130.0" promptText="Tipo" />
+                <TextField fx:id="txtCantidad" prefWidth="120.0" promptText="Cantidad" />
+                <TextField fx:id="txtMotivo" HBox.hgrow="ALWAYS" promptText="Motivo (opcional)" />
+                <Button mnemonicParsing="false" onAction="#registrarMovimiento" text="Registrar" />
+            </children>
+        </HBox>
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <children>
+                <Label text="Movimientos recientes (últimos 100)" />
+                <Button mnemonicParsing="false" onAction="#actualizarReporte" text="Actualizar" />
+            </children>
+        </HBox>
+        <TableView fx:id="tablaMovimientos" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colFecha" prefWidth="170.0" text="Fecha y hora" />
+                <TableColumn fx:id="colProducto" prefWidth="180.0" text="Producto" />
+                <TableColumn fx:id="colTipo" prefWidth="90.0" text="Tipo" />
+                <TableColumn fx:id="colCantidad" prefWidth="80.0" text="Cantidad" />
+                <TableColumn fx:id="colResponsable" prefWidth="180.0" text="Responsable" />
+                <TableColumn fx:id="colMotivo" prefWidth="220.0" text="Motivo" />
+            </columns>
+        </TableView>
+    </children>
+</VBox>

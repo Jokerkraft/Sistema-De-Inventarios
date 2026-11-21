@@ -8,13 +8,14 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="520.0" prefWidth="900.0" style="-fx-background-color: linear-gradient(to bottom, #eef6ff 0%, #f4f7fb 100%);" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.cabrera.inventario.controllers.MenuPrincipalController">
+<BorderPane prefHeight="650.0" prefWidth="1100.0" style="-fx-background-color: linear-gradient(to bottom, #eef6ff 0%, #f4f7fb 100%);" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.cabrera.inventario.controllers.MenuPrincipalController">
     <top>
         <HBox alignment="CENTER_LEFT" prefHeight="60.0" spacing="12.0" style="-fx-background-color: linear-gradient(to right, #0f172a, #1d4ed8); -fx-border-color: rgba(255,255,255,0.25); -fx-border-width: 0 0 1 0;" BorderPane.alignment="CENTER">
             <children>
@@ -26,8 +27,10 @@
 
                 <Region HBox.hgrow="ALWAYS" />
 
-                <Button mnemonicParsing="false" onAction="#abrirVentanaNuevoProducto" style="-fx-background-color: linear-gradient(to right, #22c55e, #16a34a); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Nuevo Producto" />
-                <Button mnemonicParsing="false" onAction="#abrirVentanaProveedores" style="-fx-background-color: linear-gradient(to right, #f59e0b, #f97316); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Proveedores" />
+                <Label fx:id="lblSesion" text="Sesión no identificada" textFill="WHITE" />
+                <Button fx:id="btnNuevoProducto" mnemonicParsing="false" onAction="#abrirVentanaNuevoProducto" style="-fx-background-color: linear-gradient(to right, #22c55e, #16a34a); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Nuevo Producto" />
+                <Button mnemonicParsing="false" onAction="#abrirVentanaMovimientos" style="-fx-background-color: linear-gradient(to right, #3b82f6, #2563eb); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Movimientos" />
+                <Button fx:id="btnProveedores" mnemonicParsing="false" onAction="#abrirVentanaProveedores" style="-fx-background-color: linear-gradient(to right, #f59e0b, #f97316); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Proveedores" />
                 <Button mnemonicParsing="false" onAction="#cerrarSesion" style="-fx-background-color: linear-gradient(to right, #10b981, #059669); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Cerrar Sesión" />
                 <Button mnemonicParsing="false" onAction="#salirDelSistema" style="-fx-background-color: linear-gradient(to right, #ef4444, #dc2626); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Salir" />
             </children>
@@ -43,13 +46,23 @@
                 <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
             </padding>
             <children>
-                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
                     <children>
                         <Label text="Inventario Actual" textFill="#0f172a">
                             <font>
                                 <Font name="System Bold" size="22.0" />
                             </font>
                         </Label>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="lblAlertaStock" text="Sin alertas de stock bajo" />
+                    </children>
+                </HBox>
+
+                <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                    <children>
+                        <TextField fx:id="txtBuscarCodigo" onAction="#buscarCodigoBarras" prefWidth="360.0" promptText="Escanea o ingresa un código y presiona Enter" />
+                        <Button fx:id="btnImportar" mnemonicParsing="false" onAction="#importarInventario" text="Importar CSV/JSON" />
+                        <Button mnemonicParsing="false" onAction="#exportarInventario" text="Exportar CSV/JSON" />
                     </children>
                 </HBox>
 
@@ -67,8 +80,8 @@
                 </TableView>
                 <HBox alignment="CENTER_RIGHT" spacing="15.0">
                     <children>
-                        <Button mnemonicParsing="false" onAction="#eliminarProducto" style="-fx-background-color: linear-gradient(to right, #ef4444, #dc2626); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Eliminar Selección" />
-                        <Button mnemonicParsing="false" onAction="#editarProducto" style="-fx-background-color: linear-gradient(to right, #fbbf24, #f59e0b); -fx-text-fill: #111827; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Editar Selección" />
+                        <Button fx:id="btnEliminar" mnemonicParsing="false" onAction="#eliminarProducto" style="-fx-background-color: linear-gradient(to right, #ef4444, #dc2626); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Eliminar Selección" />
+                        <Button fx:id="btnEditar" mnemonicParsing="false" onAction="#editarProducto" style="-fx-background-color: linear-gradient(to right, #fbbf24, #f59e0b); -fx-text-fill: #111827; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Editar Selección" />
                     </children>
                     <VBox.margin>
                         <Insets top="10.0" />

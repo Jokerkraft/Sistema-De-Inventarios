@@ -50,15 +50,18 @@ public class LoginController {
                 // Cargamos el diseño del Menú Principal
                 FXMLLoader cargador = new FXMLLoader(getClass().getResource("/com/cabrera/inventario/views/MenuPrincipal.fxml"));
                 Parent raiz = cargador.load();
+                MenuPrincipalController controlador = cargador.getController();
+                controlador.setUsuarioActual(usuarioLogueado);
 
                 // Obtenemos la ventana actual a partir del botón que lanzó el evento
                 Stage ventanaActual = (Stage) ((Node) evento.getSource()).getScene().getWindow();
 
                 // Creamos una nueva escena en el menú principal
-                Scene nuevaEscena = new Scene(raiz, 800, 600);
+                Scene nuevaEscena = new Scene(raiz, 1100, 680);
 
                 // Mostramos la nueva escena
                 ventanaActual.setTitle("Sistema de Inventarios - Menú Principal");
+                ventanaActual.setResizable(true);
                 ventanaActual.setScene(nuevaEscena);
                 ventanaActual.centerOnScreen();
                 ventanaActual.show();
