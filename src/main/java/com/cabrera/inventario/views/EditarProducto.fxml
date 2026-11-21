@@ -39,11 +39,6 @@
             <TextField fx:id="txtPrecio" />
         </VBox>
 
-        <VBox spacing="5.0">
-            <Label text="Stock Actual:" />
-            <TextField fx:id="txtStock" />
-        </VBox>
-
         <HBox alignment="CENTER_RIGHT" spacing="10.0">
             <VBox.margin>
                 <Insets top="15.0" />

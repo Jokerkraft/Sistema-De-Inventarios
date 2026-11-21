@@ -16,7 +16,6 @@ public class NuevoProductoController {
     @FXML private TextField txtNombre;
     @FXML private TextField txtDescripcion;
     @FXML private TextField txtPrecioBase;
-    @FXML private TextField txtStock;
 
     // Instanciamos el comportamiento de la API
     private PrecioStrategy estrategiaAPI = new PrecioAPIStrategy();
@@ -50,17 +49,16 @@ public class NuevoProductoController {
             String descripcion = txtDescripcion.getText().trim();
 
             // Validamos que los campos no estén vacíos
-            if (codigo.isEmpty() || nombre.isEmpty() || txtPrecioBase.getText().isEmpty() || txtStock.getText().isEmpty()) {
-                mostrarAlerta("Error de Validación", "Todos los campos son obligatorios.", Alert.AlertType.WARNING);
+            if (codigo.isEmpty() || nombre.isEmpty() || txtPrecioBase.getText().isEmpty()) {
+                mostrarAlerta("Error de Validación", "Código, nombre y precio son obligatorios.", Alert.AlertType.WARNING);
                 return;
             }
 
             double precio = Double.parseDouble(txtPrecioBase.getText());
-            int stock = Integer.parseInt(txtStock.getText());
 
-            // Validamos que no exista stock negativo
-            if (stock < 0) {
-                mostrarAlerta("Error de Validación", "El stock actual no puede ser un valor negativo.", Alert.AlertType.WARNING);
+            if (!Double.isFinite(precio) || precio < 0) {
+                mostrarAlerta("Error de Validación", "El precio debe ser un número finito y no negativo.",
+                        Alert.AlertType.WARNING);
                 return;
             }
 
@@ -73,7 +71,8 @@ public class NuevoProductoController {
             }
 
             // Creamos el objeto si pasa todas las validaciones
-            Producto nuevoProducto = new Producto(0, codigo, nombre, descripcion, precio, stock);
+            // Las existencias se agregan después mediante un movimiento de entrada
+            Producto nuevoProducto = new Producto(0, codigo, nombre, descripcion, precio, 0);
 
             // Guardamos en la base de datos usando el DAO
             if (productoDAO.crear(nuevoProducto)) {
@@ -84,7 +83,7 @@ public class NuevoProductoController {
             }
 
         } catch (NumberFormatException e) {
-            mostrarAlerta("Datos Inválidos", "El precio y el stock deben ser valores numéricos.", Alert.AlertType.WARNING);
+            mostrarAlerta("Datos Inválidos", "El precio debe ser un número válido.", Alert.AlertType.WARNING);
         }
     }
 

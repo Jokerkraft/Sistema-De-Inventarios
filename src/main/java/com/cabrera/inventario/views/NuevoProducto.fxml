@@ -42,11 +42,6 @@
             </HBox>
         </VBox>
 
-        <VBox spacing="5.0">
-            <Label text="Stock Inicial:" />
-            <TextField fx:id="txtStock" promptText="0" />
-        </VBox>
-
         <HBox alignment="CENTER_RIGHT" spacing="10.0">
             <VBox.margin>
                 <Insets top="15.0" />
