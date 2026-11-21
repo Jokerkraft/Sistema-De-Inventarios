@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+// Proporciona la conexión JDBC compartida mediante el patrón Singleton
 public class ConexionBaseDatos {
 
     // Única instancia de la clase utilizada para compartir la conexión
@@ -59,6 +60,7 @@ public class ConexionBaseDatos {
     }
 
     // Retorna la conexión activa o genera una excepción si no se pudo establecer
+    // Devuelve la conexión abierta o informa si la configuración no permitió conectarse
     public Connection obtenerConexion() {
         if (conexion == null) {
             throw new IllegalStateException("No hay conexión con la base de datos. Revisa database.properties y MySQL");
@@ -67,6 +69,7 @@ public class ConexionBaseDatos {
     }
 
     // Cierra la conexión y muestra un mensaje si ocurre algún error
+    // Libera la conexión compartida cuando la aplicación termina
     public void cerrarConexion() {
         if (conexion != null) {
             try {

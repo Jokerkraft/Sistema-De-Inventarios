@@ -15,6 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
+// Administra el formulario y la tabla de proveedores de la aplicación
 public class ProveedoresController {
 
     // Controles de la tabla y columnas enlazadas con los datos de los proveedores
@@ -37,10 +38,10 @@ public class ProveedoresController {
     // DAO encargado de realizar las operaciones de persistencia de proveedores
     private final ProveedorDAO proveedorDAO = new ProveedorDAOImpl();
 
-    // Configura la tabla y carga los proveedores al abrir la ventana.
+    // Configura la tabla y carga los proveedores al abrir la ventana
     @FXML
     public void initialize() {
-        // Vincula cada propiedad del modelo con su columna correspondiente.
+        // Vincula cada propiedad del modelo con su columna correspondiente
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colContacto.setCellValueFactory(new PropertyValueFactory<>("contacto"));
         colTelefono.setCellValueFactory(new PropertyValueFactory<>("telefono"));

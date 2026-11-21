@@ -3,9 +3,11 @@ package com.cabrera.inventario.util;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+// Agrupa operaciones de transformación de credenciales usadas por el login
 public class UtilidadSeguridad {
 
     // Método estático para encriptar cualquier texto a SHA-1
+    // Devuelve el resumen hexadecimal que compara la capa de autenticación
     public static String encriptarSHA1(String textoPlano) {
         try {
             // Instanciamos el algoritmo SHA-1

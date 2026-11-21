@@ -9,18 +9,23 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+// Valida y guarda los cambios del producto seleccionado en la tabla principal
 public class EditarProductoController {
 
+    // Campos que muestran el código y los datos editables del producto.
     @FXML private TextField txtCodigo;
     @FXML private TextField txtNombre;
     @FXML private TextField txtDescripcion;
     @FXML private TextField txtPrecio;
 
+    // DAO encargado de persistir las modificaciones del catálogo
     // Instanciamos el DAO
     private ProductoDAO productoDAO = new ProductoDAOImpl();
+    // Conserva el producto seleccionado para conocer su identificador y stock
     private Producto productoActual;
 
     // Este método recibe el producto desde la ventana principal y llena los campos
+    // Prepara el formulario con los datos del producto que se va a editar
     public void cargarProducto(Producto producto) {
         this.productoActual = producto;
         txtCodigo.setText(producto.getCodigo());
@@ -30,6 +35,7 @@ public class EditarProductoController {
     }
 
     @FXML
+    // Valida los campos editables y guarda la actualización
     void guardarCambios(ActionEvent event) {
         try {
             String nombre = txtNombre.getText().trim();
@@ -48,7 +54,7 @@ public class EditarProductoController {
                 return;
             }
 
-            // Conservamos el objeto original si la base de datos rechaza el cambio.
+            // Conservamos el objeto original si la base de datos rechaza el cambio
             Producto productoEditado = new Producto(
                     productoActual.getIdProducto(), productoActual.getCodigo(), nombre, descripcion,
                     productoActual.getPrecioCompra(), precio, productoActual.getStockActual());
@@ -67,11 +73,13 @@ public class EditarProductoController {
     }
 
     @FXML
+    // Cierra el diálogo de edición sin cambiar el producto
     void cerrarVentana(ActionEvent event) {
         Stage ventana = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
         ventana.close();
     }
 
+    // Presenta mensajes consistentes para validaciones y resultados del guardado
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);

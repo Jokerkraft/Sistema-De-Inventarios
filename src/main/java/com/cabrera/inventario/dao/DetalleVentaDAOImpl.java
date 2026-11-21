@@ -29,7 +29,7 @@ public class DetalleVentaDAOImpl implements DetalleVentaDAO {
         );
     }
 
-    // Registra un nuevo producto dentro de una venta.
+    // Registra un nuevo producto dentro de una venta
     @Override
     public boolean crear(DetalleVenta detalle) {
         String sql = "INSERT INTO detalle_ventas (id_venta, id_producto, cantidad, precio_unitario) VALUES (?, ?, ?, ?)";
@@ -46,7 +46,7 @@ public class DetalleVentaDAOImpl implements DetalleVentaDAO {
         }
     }
 
-    // Busca un detalle mediante la combinación id_venta e id_producto.
+    // Busca un detalle mediante la combinación id_venta e id_producto
     @Override
     public DetalleVenta obtenerPorClave(int venta, int producto) {
         String sql = "SELECT * FROM detalle_ventas WHERE id_venta = ? AND id_producto = ?";
@@ -64,7 +64,7 @@ public class DetalleVentaDAOImpl implements DetalleVentaDAO {
         }
     }
 
-    // Obtiene todos los productos asociados a una venta.
+    // Obtiene todos los productos asociados a una venta
     @Override
     public List<DetalleVenta> obtenerPorVenta(int venta) {
         List<DetalleVenta> detalles = new ArrayList<>();
@@ -84,14 +84,14 @@ public class DetalleVentaDAOImpl implements DetalleVentaDAO {
         return detalles;
     }
 
-    // Adapta el método genérico para devolver el primer renglón de la venta.
+    // Adapta el método genérico para devolver el primer renglón de la venta
     @Override
     public DetalleVenta obtenerPorId(int idVenta) {
         List<DetalleVenta> detalles = obtenerPorVenta(idVenta);
         return detalles.isEmpty() ? null : detalles.get(0);
     }
 
-    // Obtiene todos los detalles registrados en todas las ventas.
+    // Obtiene todos los detalles registrados en todas las ventas
     @Override
     public List<DetalleVenta> obtenerTodos() {
         List<DetalleVenta> detalles = new ArrayList<>();
@@ -108,7 +108,7 @@ public class DetalleVentaDAOImpl implements DetalleVentaDAO {
         return detalles;
     }
 
-    // Actualiza la cantidad y el precio unitario de un detalle existente.
+    // Actualiza la cantidad y el precio unitario de un detalle existente
     @Override
     public boolean actualizar(DetalleVenta detalle) {
         String sql = "UPDATE detalle_ventas SET cantidad = ?, precio_unitario = ? WHERE id_venta = ? AND id_producto = ?";
@@ -125,7 +125,7 @@ public class DetalleVentaDAOImpl implements DetalleVentaDAO {
         }
     }
 
-    // Elimina un producto específico dentro de una venta.
+    // Elimina un producto específico dentro de una venta
     @Override
     public boolean eliminar(int venta, int producto) {
         String sql = "DELETE FROM detalle_ventas WHERE id_venta = ? AND id_producto = ?";
@@ -140,7 +140,7 @@ public class DetalleVentaDAOImpl implements DetalleVentaDAO {
         }
     }
 
-    // Adapta el método genérico para eliminar todos los renglones de una venta.
+    // Adapta el método genérico para eliminar todos los renglones de una venta
     @Override
     public boolean eliminar(int idVenta) {
         String sql = "DELETE FROM detalle_ventas WHERE id_venta = ?";

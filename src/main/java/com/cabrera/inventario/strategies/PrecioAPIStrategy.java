@@ -7,7 +7,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+// Obtiene una referencia de precio desde un servicio externo compatible con JSON
 public class PrecioAPIStrategy implements PrecioStrategy{
+
+    // Solicita el precio remoto y lo convierte a la moneda usada como sugerencia
     @Override
     public double calcularPrecio(String codigoProducto, double precioBase) {
         System.out.println("Consultando precio sugerido en la API externa...");

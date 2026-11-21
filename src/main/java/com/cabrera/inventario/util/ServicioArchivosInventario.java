@@ -25,9 +25,11 @@ public class ServicioArchivosInventario {
             "codigo", "nombre", "descripcion", "precioCompra", "precioVenta", "stockActual"
     );
 
+    // Resume los resultados para que la interfaz informe cuántas filas se procesaron
     public record ResultadoImportacion(int productosNuevos, int productosActualizados) {
     }
 
+    // Escribe los productos en CSV o JSON según la extensión del archivo
     public void exportar(Path archivo, List<Producto> productos) throws IOException {
         String extension = obtenerExtension(archivo);
         if ("csv".equals(extension)) {
@@ -39,6 +41,7 @@ public class ServicioArchivosInventario {
         }
     }
 
+    // Lee y valida el archivo antes de modificar el catálogo o las existencias
     public ResultadoImportacion importar(
             Path archivo,
             ProductoDAO productoDAO,
@@ -60,6 +63,7 @@ public class ServicioArchivosInventario {
         return guardarProductos(productos, archivo, productoDAO, movimientoDAO, usuario);
     }
 
+    // Genera un CSV con encabezados y campos escapados correctamente
     private void exportarCsv(Path archivo, List<Producto> productos) throws IOException {
         List<String> filas = new ArrayList<>();
         filas.add(String.join(",", ENCABEZADOS_CSV));
@@ -78,6 +82,7 @@ public class ServicioArchivosInventario {
         Files.writeString(archivo, String.join(System.lineSeparator(), filas), StandardCharsets.UTF_8);
     }
 
+    // Serializa cada producto como un objeto dentro de un arreglo JSON
     private void exportarJson(Path archivo, List<Producto> productos) throws IOException {
         JSONArray datos = new JSONArray();
         for (Producto producto : productos) {
@@ -93,6 +98,7 @@ public class ServicioArchivosInventario {
         Files.writeString(archivo, datos.toString(2), StandardCharsets.UTF_8);
     }
 
+    // Lee filas CSV y verifica que respeten el encabezado y número de columnas
     private List<Producto> leerCsv(Path archivo) throws IOException {
         String contenido = Files.readString(archivo, StandardCharsets.UTF_8);
         if (contenido.startsWith("\uFEFF")) {
@@ -117,6 +123,7 @@ public class ServicioArchivosInventario {
         return productos;
     }
 
+    // Separa campos CSV respetando comas y saltos de línea dentro de comillas
     private List<List<String>> analizarCsv(String contenido) throws IOException {
         List<List<String>> filas = new ArrayList<>();
         List<String> fila = new ArrayList<>();
@@ -158,6 +165,7 @@ public class ServicioArchivosInventario {
         return filas;
     }
 
+    // Convierte los objetos JSON del archivo en productos del dominio
     private List<Producto> leerJson(Path archivo) throws IOException {
         try {
             JSONArray datos = new JSONArray(Files.readString(archivo, StandardCharsets.UTF_8));
@@ -180,6 +188,7 @@ public class ServicioArchivosInventario {
         }
     }
 
+    // Crea un producto y asocia errores numéricos al número del registro
     private Producto crearProducto(List<String> valores, int fila) throws IOException {
         try {
             return new Producto(
@@ -196,6 +205,7 @@ public class ServicioArchivosInventario {
         }
     }
 
+    // Rechaza códigos repetidos, campos obligatorios vacíos y valores inválidos
     private void validarProductos(List<Producto> productos) throws IOException {
         Set<String> codigos = new HashSet<>();
         for (int indice = 0; indice < productos.size(); indice++) {
@@ -216,6 +226,7 @@ public class ServicioArchivosInventario {
         }
     }
 
+    // Crea o actualiza cada producto y audita cualquier diferencia de stock
     private ResultadoImportacion guardarProductos(
             List<Producto> productos,
             Path archivo,
@@ -267,6 +278,7 @@ public class ServicioArchivosInventario {
         return new ResultadoImportacion(nuevos, actualizados);
     }
 
+    // Delega la escritura al DAO según se trate de alta o actualización
     private boolean guardarDatosProducto(ProductoDAO productoDAO, Producto producto, boolean esNuevo) {
         if (esNuevo) {
             return productoDAO.crear(producto);
@@ -274,6 +286,7 @@ public class ServicioArchivosInventario {
         return productoDAO.actualizar(producto);
     }
 
+    // Representa un ajuste importado como entrada o salida del usuario responsable
     private boolean registrarAjuste(
             MovimientoInventarioDAO movimientoDAO,
             Producto producto,
@@ -294,6 +307,7 @@ public class ServicioArchivosInventario {
         return movimientoDAO.registrarMovimiento(movimiento);
     }
 
+    // Escapa comillas y separadores para mantener válidos los campos CSV
     private String escaparCsv(String valor) {
         String seguro = valor == null ? "" : valor;
         if (seguro.contains(",") || seguro.contains("\"") || seguro.contains("\n") || seguro.contains("\r")) {
@@ -302,6 +316,7 @@ public class ServicioArchivosInventario {
         return seguro;
     }
 
+    // Normaliza la extensión para reconocer los formatos sin distinguir mayúsculas
     private String obtenerExtension(Path archivo) {
         String nombre = archivo.getFileName().toString();
         int punto = nombre.lastIndexOf('.');

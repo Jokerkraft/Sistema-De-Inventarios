@@ -17,22 +17,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// Comprueba importación/exportación y auditoría sin requerir una base MySQL real.
 class ServicioArchivosInventarioTest {
 
+    // Crea un directorio aislado para los archivos temporales de cada prueba.
     @TempDir
     Path carpetaTemporal;
 
     @Test
+    // Verifica que CSV conserve comas, comillas, saltos de línea y autoría.
     void importaYExportaCsvConCamposEspecialesYAuditaElStock() throws IOException {
         verificarImportacion("csv");
     }
 
     @Test
+    // Verifica el mismo flujo de catálogo y auditoría usando JSON.
     void importaYExportaJsonYAuditaElStock() throws IOException {
         verificarImportacion("json");
     }
 
     @Test
+    // Confirma que una reducción de stock se registre como salida.
     void importaUnaSalidaComoMovimientoResponsable() throws IOException {
         ProductosFalsos productos = new ProductosFalsos();
         productos.productos.add(new Producto(1, "A-1", "Producto", "Descripción", 2.0, 3.0, 10));
@@ -54,6 +59,7 @@ class ServicioArchivosInventarioTest {
     }
 
     @Test
+    // Asegura que un archivo inválido no inserte productos ni movimientos.
     void rechazaExistenciasNegativasAntesDeModificarElCatalogo() throws IOException {
         Path archivo = carpetaTemporal.resolve("stock-negativo.json");
         java.nio.file.Files.writeString(archivo, """
@@ -69,6 +75,7 @@ class ServicioArchivosInventarioTest {
         assertTrue(movimientos.movimientos.isEmpty());
     }
 
+    // Ejecuta el mismo escenario de ida y vuelta para cada formato de archivo.
     private void verificarImportacion(String extension) throws IOException {
         ServicioArchivosInventario servicio = new ServicioArchivosInventario();
         Producto producto = new Producto(
@@ -95,6 +102,7 @@ class ServicioArchivosInventarioTest {
         assertEquals(9, movimientos.movimientos.get(0).getIdUsuario());
     }
 
+    // Implementación en memoria del DAO de productos para aislar las pruebas.
     private static class ProductosFalsos implements ProductoDAO {
 
         private final List<Producto> productos = new ArrayList<>();
@@ -139,11 +147,13 @@ class ServicioArchivosInventarioTest {
         }
     }
 
+    // Simula los ajustes de stock y conserva los movimientos creados por la prueba.
     private static class MovimientosFalsos implements MovimientoInventarioDAO {
 
         private final ProductosFalsos productos;
         private final List<MovimientoInventario> movimientos = new ArrayList<>();
 
+        // Comparte el catálogo falso para aplicar los cambios de stock de prueba.
         private MovimientosFalsos(ProductosFalsos productos) {
             this.productos = productos;
         }

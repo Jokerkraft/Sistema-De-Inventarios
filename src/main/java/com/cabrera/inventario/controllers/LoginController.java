@@ -16,9 +16,11 @@ import javafx.stage.Stage;
 import javafx.scene.Node;
 import java.io.IOException;
 
+// Coordina la autenticación y la navegación entre el login y el menú principal
 public class LoginController {
 
     // Etiquetas @FXML que conectan las variables con el diseño del SceneBuilder
+    // Controles vinculados por nombre con Login.fxml
     @FXML private TextField txtUsuario;
     @FXML private PasswordField txtContrasena;
 
@@ -26,6 +28,7 @@ public class LoginController {
     private UsuarioDAO usuarioDAO = new UsuarioDAOImp();
 
     @FXML
+    // Valida las credenciales y abre el inventario cuando el acceso es correcto
     void manejarIngreso(ActionEvent evento) {
         String nombreUsuario = txtUsuario.getText();
         String contrasenaPlana = txtContrasena.getText();
@@ -78,6 +81,7 @@ public class LoginController {
     }
 
     @FXML
+    // Cierra la ventana de inicio y finaliza el ciclo de JavaFX
     void salirAplicacion(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
@@ -85,6 +89,7 @@ public class LoginController {
     }
 
     // Método auxiliar para generar las alertas en JavaFX
+    // Centraliza la presentación de mensajes para el inicio de sesión
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);

@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
+// Coordina el inventario principal, los reportes y la navegación a otras ventanas
 public class MenuPrincipalController {
 
     // Controles gráficos
@@ -40,8 +41,11 @@ public class MenuPrincipalController {
 
     // Instanciamos el DAO de productos
     private ProductoDAO productoDAO = new ProductoDAOImpl();
+    // Usuario autenticado que realiza operaciones y movimientos de inventario.
     private Usuario usuarioActual;
+    // Servicio que centraliza la importación y exportación de archivos.
     private final ServicioArchivosInventario servicioArchivos = new ServicioArchivosInventario();
+    // Límite configurable para considerar un producto con existencias bajas.
     private static final int UMBRAL_STOCK_BAJO = 5;
 
     // Método que se ejecuta automáticamente al abrir la ventana
@@ -60,6 +64,7 @@ public class MenuPrincipalController {
         System.out.println("Menú principal inicializado y tabla cargada.");
     }
 
+    // Consulta, ordena y muestra el inventario junto con su alerta de existencias
     private void cargarDatosTabla() {
         // Ordenamos la lista con Comparator para mostrar el inventario por nombre
         List<Producto> listaNormal = OrdenadorGenerico.ordenar(
@@ -75,6 +80,7 @@ public class MenuPrincipalController {
         actualizarAlertaStock(listaNormal);
     }
 
+    // Recibe la sesión autenticada y configura las acciones disponibles por rol
     public void setUsuarioActual(Usuario usuario) {
         usuarioActual = usuario;
         lblSesion.setText(usuario == null
@@ -89,6 +95,7 @@ public class MenuPrincipalController {
         btnImportar.setDisable(!esAdministrador);
     }
 
+    // Actualiza el aviso contando productos bajo el umbral configurado
     private void actualizarAlertaStock(List<Producto> productos) {
         long productosBajos = productos.stream()
                 .filter(producto -> producto.getStockActual() <= UMBRAL_STOCK_BAJO)
@@ -99,6 +106,7 @@ public class MenuPrincipalController {
     }
 
     @FXML
+    // Abre el formulario de alta y recarga el inventario al cerrar
     void abrirVentanaNuevoProducto(ActionEvent event) {
         if (!requiereAdministrador()) {
             return;
@@ -131,6 +139,7 @@ public class MenuPrincipalController {
     }
 
     @FXML
+    // Abre la gestión de proveedores si la sesión tiene permisos administrativos
     void abrirVentanaProveedores(ActionEvent event) {
         if (!requiereAdministrador()) {
             return;
@@ -153,6 +162,7 @@ public class MenuPrincipalController {
     }
 
     @FXML
+    // Abre los movimientos y recarga el stock después de cerrar la ventana
     void abrirVentanaMovimientos(ActionEvent event) {
         try {
             FXMLLoader cargador = new FXMLLoader(getClass().getResource(
@@ -175,6 +185,7 @@ public class MenuPrincipalController {
     }
 
     @FXML
+    // Guarda el inventario en el formato seleccionado por el usuario
     void exportarInventario(ActionEvent event) {
         FileChooser selector = new FileChooser();
         selector.setTitle("Exportar inventario");
@@ -208,6 +219,7 @@ public class MenuPrincipalController {
     }
 
     @FXML
+    // Importa el catálogo y registra los cambios de existencias con el usuario actual
     void importarInventario(ActionEvent event) {
         if (!requiereAdministrador()) {
             return;
@@ -243,6 +255,7 @@ public class MenuPrincipalController {
         }
     }
 
+    // Centraliza la presentación de mensajes para las acciones del menú
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
@@ -251,6 +264,7 @@ public class MenuPrincipalController {
         alerta.showAndWait();
     }
 
+    // Evita ejecutar tareas administrativas con perfiles sin autorización
     private boolean requiereAdministrador() {
         if (usuarioActual != null && "ADMIN".equalsIgnoreCase(usuarioActual.getRol())) {
             return true;
@@ -261,6 +275,7 @@ public class MenuPrincipalController {
     }
 
     @FXML
+    // Busca el código introducido o escaneado y selecciona el producto encontrado
     void buscarCodigoBarras() {
         String codigo = txtBuscarCodigo.getText().trim();
         if (codigo.isEmpty()) {
@@ -285,6 +300,7 @@ public class MenuPrincipalController {
     }
 
     @FXML
+    // Regresa al login y limpia el usuario asociado a esta instancia
     void cerrarSesion(ActionEvent event) {
         try {
             // Cargamos la vista del Login nuevamente
@@ -303,12 +319,14 @@ public class MenuPrincipalController {
     }
 
     @FXML
+    // Finaliza la aplicación JavaFX
     void salirDelSistema(ActionEvent event) {
         // Cerramos la aplicación de JavaFX por completo
         javafx.application.Platform.exit();
     }
 
     @FXML
+    // Pide confirmación antes de borrar el producto seleccionado
     void eliminarProducto(ActionEvent event) {
         if (!requiereAdministrador()) {
             return;
@@ -340,6 +358,7 @@ public class MenuPrincipalController {
     }
 
     @FXML
+    // Abre el formulario de edición del producto seleccionado
     void editarProducto(ActionEvent event) {
         if (!requiereAdministrador()) {
             return;

@@ -10,8 +10,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+// Controla la validación y el alta de productos desde el formulario JavaFX
 public class NuevoProductoController {
 
+    // Controles del formulario enlazados desde NuevoProducto.fxml
     @FXML private TextField txtCodigo;
     @FXML private TextField txtNombre;
     @FXML private TextField txtDescripcion;
@@ -24,6 +26,7 @@ public class NuevoProductoController {
     private ProductoDAO productoDAO = new ProductoDAOImpl();
 
     @FXML
+    // Obtiene una referencia de precio usando la estrategia configurada
     void obtenerPrecioSugerido(ActionEvent event) {
         try {
             double precioBase = Double.parseDouble(txtPrecioBase.getText());
@@ -42,6 +45,7 @@ public class NuevoProductoController {
     }
 
     @FXML
+    // Valida los datos y crea un producto con existencias iniciales en cero
     void guardarProducto(ActionEvent event) {
         try {
             String codigo = txtCodigo.getText().trim();
@@ -88,12 +92,14 @@ public class NuevoProductoController {
     }
 
     @FXML
+    // Cierra el formulario de alta
     void cerrarVentana(ActionEvent event) {
         // Cerramos esta ventana emergente
         Stage ventana = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
         ventana.close();
     }
 
+    // Muestra un mensaje de validación o resultado al usuario
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);

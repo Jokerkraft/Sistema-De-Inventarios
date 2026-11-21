@@ -17,10 +17,12 @@ import java.util.Locale;
 // Administra movimientos y actualiza las existencias en la misma transacción
 public class MovimientoInventarioDAOImpl implements MovimientoInventarioDAO {
 
+    // Obtiene la conexión compartida con la base de datos
     private Connection conexion() {
         return ConexionBaseDatos.obtenerInstancia().obtenerConexion();
     }
 
+    // Convierte la fila y los nombres relacionados en el modelo usado por la tabla
     private MovimientoInventario mapear(ResultSet resultado) throws SQLException {
         Timestamp fecha = resultado.getTimestamp("fecha");
         MovimientoInventario movimiento = new MovimientoInventario(
@@ -39,6 +41,7 @@ public class MovimientoInventarioDAOImpl implements MovimientoInventarioDAO {
         return movimiento;
     }
 
+    // Escribe NULL cuando no se recibió un identificador de usuario
     private void asignarUsuario(PreparedStatement sentencia, int posicion, int idUsuario) throws SQLException {
         if (idUsuario > 0) {
             sentencia.setInt(posicion, idUsuario);
@@ -89,6 +92,7 @@ public class MovimientoInventarioDAOImpl implements MovimientoInventarioDAO {
         }
     }
 
+    // Rechaza tipos desconocidos, cantidades no positivas y operaciones sin responsable
     private void validarMovimiento(MovimientoInventario movimiento) {
         if (movimiento == null
                 || movimiento.getIdProducto() <= 0
@@ -100,6 +104,7 @@ public class MovimientoInventarioDAOImpl implements MovimientoInventarioDAO {
         }
     }
 
+    // Aplica el cambio solo si el producto existe y el resultado no queda negativo
     private boolean actualizarStock(Connection conexion, int idProducto, int diferencia) throws SQLException {
         String sql = "UPDATE productos SET stock_actual = stock_actual + ? "
                 + "WHERE id_producto = ? AND stock_actual + ? >= 0";
@@ -112,6 +117,7 @@ public class MovimientoInventarioDAOImpl implements MovimientoInventarioDAO {
         }
     }
 
+    // Inserta el registro de auditoría dentro de la transacción activa
     private boolean insertarMovimiento(Connection conexion, MovimientoInventario movimiento) throws SQLException {
         String sql = "INSERT INTO movimientos "
                 + "(tipo, id_producto, cantidad, motivo, fecha, referencia, id_usuario) "
@@ -133,11 +139,13 @@ public class MovimientoInventarioDAOImpl implements MovimientoInventarioDAO {
         }
     }
 
+    // Conserva compatibilidad con el CRUD genérico y siempre usa el flujo transaccional
     @Override
     public boolean crear(MovimientoInventario movimiento) {
         return registrarMovimiento(movimiento);
     }
 
+    // Busca un movimiento y agrega nombres de producto y usuario para el reporte
     @Override
     public MovimientoInventario obtenerPorId(int id) {
         String sql = consultaMovimientos() + " WHERE m.id_movimiento = ?";
@@ -152,6 +160,7 @@ public class MovimientoInventarioDAOImpl implements MovimientoInventarioDAO {
         }
     }
 
+    // Recupera el historial completo ordenado del movimiento más reciente al más antiguo
     @Override
     public List<MovimientoInventario> obtenerTodos() {
         List<MovimientoInventario> movimientos = new ArrayList<>();
@@ -168,6 +177,7 @@ public class MovimientoInventarioDAOImpl implements MovimientoInventarioDAO {
         return movimientos;
     }
 
+    // Limita la consulta del reporte a los últimos movimientos solicitados
     @Override
     public List<MovimientoInventario> obtenerRecientes(int limite) {
         if (limite <= 0) {
@@ -189,6 +199,7 @@ public class MovimientoInventarioDAOImpl implements MovimientoInventarioDAO {
         return movimientos;
     }
 
+    // Comparte los JOIN necesarios para mostrar nombres en lugar de solo identificadores
     private String consultaMovimientos() {
         return "SELECT m.*, p.nombre AS nombre_producto, u.nombre_completo AS nombre_usuario "
                 + "FROM movimientos m "

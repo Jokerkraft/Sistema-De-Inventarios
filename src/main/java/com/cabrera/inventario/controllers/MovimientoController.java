@@ -26,11 +26,13 @@ import java.util.List;
 // Controla el registro de entradas y salidas y el reporte de movimientos recientes
 public class MovimientoController {
 
+    // Controles para seleccionar el producto y los datos del nuevo movimiento
     @FXML private ComboBox<Producto> cmbProducto;
     @FXML private ComboBox<String> cmbTipo;
     @FXML private TextField txtCantidad;
     @FXML private TextField txtMotivo;
     @FXML private Label lblUsuario;
+    // Tabla y columnas que forman el reporte de movimientos recientes
     @FXML private TableView<MovimientoInventario> tablaMovimientos;
     @FXML private TableColumn<MovimientoInventario, LocalDateTime> colFecha;
     @FXML private TableColumn<MovimientoInventario, String> colProducto;
@@ -39,11 +41,14 @@ public class MovimientoController {
     @FXML private TableColumn<MovimientoInventario, String> colResponsable;
     @FXML private TableColumn<MovimientoInventario, String> colMotivo;
 
+    // Acceso a productos y movimientos a través de la capa DAO
     private final ProductoDAO productoDAO = new ProductoDAOImpl();
     private final MovimientoInventarioDAO movimientoDAO = new MovimientoInventarioDAOImpl();
+    // Usuario autenticado recibido desde el menú principal.
     private Usuario usuarioActual;
 
     @FXML
+    // Configura controles, columnas y datos iniciales de la vista
     public void initialize() {
         cmbTipo.setItems(FXCollections.observableArrayList("ENTRADA", "SALIDA"));
         cmbTipo.getSelectionModel().selectFirst();
@@ -79,6 +84,7 @@ public class MovimientoController {
         cargarMovimientos();
     }
 
+    // Recibe la identidad autenticada para registrar la autoría de operaciones
     public void setUsuarioActual(Usuario usuario) {
         usuarioActual = usuario;
         lblUsuario.setText(usuario == null
@@ -86,6 +92,7 @@ public class MovimientoController {
                 : usuario.getNombreCompleto() + " (" + usuario.getRol() + ")");
     }
 
+    // Actualiza el selector con los productos disponibles
     private void cargarProductos() {
         List<Producto> productos = productoDAO.obtenerTodos();
         cmbProducto.setItems(FXCollections.observableArrayList(productos));
@@ -94,11 +101,13 @@ public class MovimientoController {
         }
     }
 
+    // Consulta y muestra los últimos movimientos almacenados
     private void cargarMovimientos() {
         tablaMovimientos.setItems(FXCollections.observableArrayList(movimientoDAO.obtenerRecientes(100)));
     }
 
     @FXML
+    // Valida la captura y delega al DAO el ajuste transaccional del stock
     void registrarMovimiento() {
         Producto producto = cmbProducto.getValue();
         String tipo = cmbTipo.getValue();
@@ -139,11 +148,13 @@ public class MovimientoController {
     }
 
     @FXML
+    // Vuelve a consultar productos y movimientos desde la base de datos
     void actualizarReporte() {
         cargarProductos();
         cargarMovimientos();
     }
 
+    // Presenta mensajes informativos y errores propios de esta ventana
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
