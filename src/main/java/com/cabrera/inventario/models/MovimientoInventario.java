@@ -11,6 +11,8 @@ public class MovimientoInventario {
     private LocalDateTime fecha;
     private String referencia;
     private int idUsuario;
+    private String nombreProducto;
+    private String nombreUsuario;
 
     public MovimientoInventario() {
     }
@@ -89,5 +91,21 @@ public class MovimientoInventario {
 
     public void setIdUsuario(int idUsuario) {
         this.idUsuario = idUsuario;
+    }
+
+    public String getNombreProducto() {
+        return nombreProducto;
+    }
+
+    public void setNombreProducto(String nombreProducto) {
+        this.nombreProducto = nombreProducto;
+    }
+
+    public String getNombreUsuario() {
+        return nombreUsuario;
+    }
+
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
     }
 }
