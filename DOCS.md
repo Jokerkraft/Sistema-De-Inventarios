@@ -41,8 +41,9 @@ Proceso actual:
 > SHA-1 se mantiene porque es el mecanismo actual del proyecto y del dato
 > inicial. Para una versión real debe sustituirse por BCrypt o Argon2.
 
-El sistema actual no usa JWT, tokens persistentes ni autorización por rol. El
-rol se guarda para extender la aplicación posteriormente.
+El sistema actual no usa JWT ni tokens persistentes. El rol `ADMIN` puede
+gestionar el catálogo, proveedores e importaciones; los demás roles pueden
+consultar el inventario, exportarlo y registrar movimientos.
 
 ## 3. Patrones de diseño implementados
 
@@ -78,12 +79,14 @@ Define operaciones comunes:
 
 Implementaciones activas:
 
-- `ProductoDAOImpl`: consulta y administra productos.
+- `ProductoDAOImpl`: consulta y administra productos; el stock solo se modifica
+  mediante movimientos.
 - `ProveedorDAOImpl`: administra proveedores.
 - `UsuarioDAOImp`: autentica usuarios.
+- `MovimientoInventarioDAOImpl`: registra movimientos y actualiza stock dentro
+  de la misma transacción JDBC.
 
-Existen interfaces para clientes, categorías, compras, ventas, detalles y
-movimientos. Sus implementaciones y pantallas son trabajo pendiente.
+Existen interfaces y DAOs para categorías, clientes, compras, ventas y detalles.
 
 ### 3.3 Singleton Pattern
 
@@ -95,8 +98,9 @@ Carga la configuración desde `database.properties` y la expone a los DAO.
 ## 4. Programación genérica
 
 `DaoGenerico<T>` usa el parámetro `T` para describir el tipo de entidad que
-administra cada DAO. Esto evita repetir las mismas firmas CRUD para
-`Producto`, `Proveedor`, `Usuario` y las entidades que se implementarán.
+administra cada DAO. `OrdenadorGenerico.ordenar(List<T>, Comparator<? super T>)`
+ordena copias de listas sin modificar la lista original. El inventario usa este
+ordenador para mostrar productos por nombre.
 
 ## 5. Arquitectura MVC con JavaFX
 
@@ -121,7 +125,7 @@ un valor duplicado.
 
 ### Vista
 
-Ubicación: `src/main/resources/com/cabrera/inventario/views/`
+Ubicación: `src/main/java/com/cabrera/inventario/views/`
 
 Vistas disponibles:
 
@@ -130,6 +134,7 @@ Vistas disponibles:
 - `NuevoProducto.fxml`: alta de productos.
 - `EditarProducto.fxml`: actualización de producto seleccionado.
 - `Proveedores.fxml`: mantenimiento de proveedores.
+- `Movimientos.fxml`: captura de entradas/salidas y reporte reciente.
 
 ### Controlador
 
@@ -140,9 +145,11 @@ Ubicación: `controllers/`
   proveedores; también elimina productos y cierra sesión.
 - `NuevoProductoController`: valida y registra productos; solicita precio
   sugerido mediante Strategy.
-- `EditarProductoController`: actualiza el producto seleccionado y valida
-  precio y stock.
+- `EditarProductoController`: actualiza los datos del producto y valida
+  precios no negativos.
 - `ProveedoresController`: crea, modifica, lista y elimina proveedores.
+- `MovimientoController`: registra movimientos del usuario activo y muestra los
+  últimos 100 movimientos.
 
 ### Flujo principal
 
@@ -165,26 +172,54 @@ Vista FXML → Controller → DAO → JDBC → MySQL
 - Registro de productos.
 - Validación de campos obligatorios, duplicados y stock negativo.
 - Consulta opcional de un precio sugerido.
-- Edición de nombre, descripción, precio y stock.
+- Edición de nombre, descripción y precios.
 - Eliminación con confirmación.
 
-El producto mantiene una sola fuente para stock y precios actuales: la tabla
-`productos`.
+El stock no se edita desde los formularios de alta o edición. Un producto nuevo
+inicia con cero existencias y las cantidades se ajustan mediante movimientos.
+`ProductoDAOImpl.actualizar` tampoco modifica la columna de stock.
 
-### 6.3 Gestión de proveedores
+### 6.3 Movimientos y reportes de inventario
 
-- Listado de proveedores.
-- Alta, edición y eliminación.
+- Registro de movimientos `ENTRADA` y `SALIDA` con cantidad positiva y motivo.
+- Cada movimiento queda vinculado al usuario que inició sesión.
+- Los usuarios con movimientos registrados no se pueden eliminar, para
+  conservar el responsable del historial.
+- El cambio de stock y el registro de auditoría se confirman juntos dentro de
+  una transacción; si falla cualquiera, se revierte la operación.
+- Las salidas que dejarían el stock por debajo de cero se rechazan.
+- El reporte presenta fecha, producto, tipo, cantidad, motivo y responsable para
+  los 100 movimientos más recientes.
+- El menú muestra una alerta cuando existen productos con cinco unidades o
+  menos; el umbral está definido por `UMBRAL_STOCK_BAJO`.
+- El rol `ADMIN` controla las acciones de alta, edición y eliminación de
+  productos, proveedores e importación.
+- El campo de búsqueda acepta lectores de código de barras configurados como
+  teclado (keyboard wedge): escanea el código para localizar y seleccionar el
+  producto.
+
+### 6.4 Importación y exportación
+
+- El menú permite exportar e importar el catálogo en CSV o JSON.
+- El CSV usa los encabezados `codigo,nombre,descripcion,precioCompra,precioVenta,stockActual`.
+- El JSON usa un arreglo de objetos con esas mismas propiedades.
+- La importación valida los registros antes de guardarlos y actualiza productos
+  existentes por código.
+- Cada diferencia de stock importada queda registrada como entrada o salida,
+  con el usuario actual como responsable.
+
+### 6.5 Gestión de proveedores
+
+- Listado, alta, edición y eliminación de proveedores.
 - Datos de contacto: teléfono, correo y dirección.
 - Estado activo/inactivo.
 
-### 6.4 Funcionalidades preparadas, aún no implementadas en la interfaz
+### 6.6 Funcionalidades aún no implementadas en la interfaz
 
 - CRUD de categorías y clientes.
-- Registro de compras y sus detalles.
-- Registro de ventas y sus detalles.
-- Movimientos de inventario y auditoría por usuario.
-- Aplicación de permisos según rol.
+- Registro de compras y ventas con actualización automática del stock.
+- Integración con lectores que requieran SDK, cámara o conexión directa; el
+  campo actual funciona con lectores que envían el código como texto.
 
 ## 7. Base de datos
 
@@ -205,7 +240,7 @@ MySQL mediante Docker, o MySQL compatible instalado localmente.
 | `detalle_compras` | Productos, cantidad y costo histórico de cada compra. |
 | `ventas` | Encabezado de ventas a cliente. |
 | `detalle_ventas` | Productos, cantidad y precio histórico de cada venta. |
-| `movimientos` | Entradas, salidas y ajustes de stock. |
+| `movimientos` | Historial de entradas y salidas con responsable. |
 
 ### Nomenclatura de constraints
 
@@ -274,25 +309,25 @@ compilador, JavaFX, MySQL Connector/J y JSON.
 
 ## 9. Verificación actual
 
-La compilación se validó con:
+La compilación y las pruebas unitarias se validan con:
 
 ```powershell
-./mvnw.cmd -o compile
+./mvnw.cmd clean test
 ```
 
 La verificación completa contra MySQL requiere tener Docker Desktop o un
 servidor MySQL en ejecución. Después de crear una base nueva se recomienda
-probar login, alta, edición, listado, eliminación de productos y el CRUD de
-proveedores.
+probar login, CRUD de productos y proveedores, entradas, salidas, rechazo de
+stock insuficiente, reporte de movimientos e importación/exportación CSV y JSON.
 
 ## 10. Más implementaciones que se podrían mejorar
 
 1. Implementar categorías y clientes en interfaz y DAO.
-2. Implementar compras, ventas y detalles usando transacciones.
-3. Registrar un movimiento de inventario por cada compra, venta o ajuste.
-4. Sustituir SHA-1 por BCrypt o Argon2.
-5. Usar `BigDecimal` para importes monetarios.
-6. Incorporar permisos por rol y pruebas automatizadas para los DAO.
+2. Implementar compras, ventas y detalles usando transacciones y registrar un
+   movimiento por cada compra o venta.
+3. Sustituir SHA-1 por BCrypt o Argon2.
+4. Usar `BigDecimal` para importes monetarios.
+5. Agregar pruebas de integración de los DAO contra MySQL.
 
 # API usada para el ejemplo
 - API disponible en: https://fakestoreapi.comß
