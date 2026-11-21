@@ -2,18 +2,208 @@ package com.cabrera.inventario.dao;
 
 import com.cabrera.inventario.models.MovimientoInventario;
 import com.cabrera.inventario.util.ConexionBaseDatos;
-import java.sql.*;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-// Registra y consulta el historial de entradas, salidas o ajustes de inventario
+// Administra movimientos y actualiza las existencias en la misma transacción
 public class MovimientoInventarioDAOImpl implements MovimientoInventarioDAO {
-    private Connection conexion(){return ConexionBaseDatos.obtenerInstancia().obtenerConexion();}
-    private MovimientoInventario mapear(ResultSet r)throws SQLException{Timestamp f=r.getTimestamp("fecha");return new MovimientoInventario(r.getInt("id_movimiento"),r.getString("tipo"),r.getInt("id_producto"),r.getInt("cantidad"),r.getString("motivo"),f==null?null:f.toLocalDateTime(),r.getString("referencia"),r.getInt("id_usuario"));}
-    private void usuarioOpcional(PreparedStatement s,int posicion,int idUsuario)throws SQLException{if(idUsuario>0)s.setInt(posicion,idUsuario);else s.setNull(posicion,Types.INTEGER);}
-    @Override public boolean crear(MovimientoInventario e){String sql="INSERT INTO movimientos (tipo, id_producto, cantidad, motivo, fecha, referencia, id_usuario) VALUES (?, ?, ?, ?, ?, ?, ?)";try(PreparedStatement s=conexion().prepareStatement(sql)){s.setString(1,e.getTipo());s.setInt(2,e.getIdProducto());s.setInt(3,e.getCantidad());s.setString(4,e.getMotivo());s.setTimestamp(5,Timestamp.valueOf(e.getFecha()==null?java.time.LocalDateTime.now():e.getFecha()));s.setString(6,e.getReferencia());usuarioOpcional(s,7,e.getIdUsuario());return s.executeUpdate()>0;}catch(SQLException x){System.err.println("Error al crear movimiento: "+x.getMessage());return false;}}
-    @Override public MovimientoInventario obtenerPorId(int id){try(PreparedStatement s=conexion().prepareStatement("SELECT * FROM movimientos WHERE id_movimiento = ?")){s.setInt(1,id);try(ResultSet r=s.executeQuery()){return r.next()?mapear(r):null;}}catch(SQLException x){System.err.println("Error al buscar movimiento: "+x.getMessage());return null;}}
-    @Override public List<MovimientoInventario> obtenerTodos(){List<MovimientoInventario> movimientos=new ArrayList<>();try(Statement s=conexion().createStatement();ResultSet r=s.executeQuery("SELECT * FROM movimientos ORDER BY fecha DESC")){while(r.next())movimientos.add(mapear(r));}catch(SQLException x){System.err.println("Error al obtener movimientos: "+x.getMessage());}return movimientos;}
-    @Override public boolean actualizar(MovimientoInventario e){String sql="UPDATE movimientos SET tipo = ?, id_producto = ?, cantidad = ?, motivo = ?, fecha = ?, referencia = ?, id_usuario = ? WHERE id_movimiento = ?";try(PreparedStatement s=conexion().prepareStatement(sql)){s.setString(1,e.getTipo());s.setInt(2,e.getIdProducto());s.setInt(3,e.getCantidad());s.setString(4,e.getMotivo());s.setTimestamp(5,Timestamp.valueOf(e.getFecha()==null?java.time.LocalDateTime.now():e.getFecha()));s.setString(6,e.getReferencia());usuarioOpcional(s,7,e.getIdUsuario());s.setInt(8,e.getIdMovimiento());return s.executeUpdate()>0;}catch(SQLException x){System.err.println("Error al actualizar movimiento: "+x.getMessage());return false;}}
-    @Override public boolean eliminar(int id){try(PreparedStatement s=conexion().prepareStatement("DELETE FROM movimientos WHERE id_movimiento = ?")){s.setInt(1,id);return s.executeUpdate()>0;}catch(SQLException x){System.err.println("Error al eliminar movimiento: "+x.getMessage());return false;}}
+
+    private Connection conexion() {
+        return ConexionBaseDatos.obtenerInstancia().obtenerConexion();
+    }
+
+    private MovimientoInventario mapear(ResultSet resultado) throws SQLException {
+        Timestamp fecha = resultado.getTimestamp("fecha");
+        MovimientoInventario movimiento = new MovimientoInventario(
+                resultado.getInt("id_movimiento"),
+                resultado.getString("tipo"),
+                resultado.getInt("id_producto"),
+                resultado.getInt("cantidad"),
+                resultado.getString("motivo"),
+                fecha == null ? null : fecha.toLocalDateTime(),
+                resultado.getString("referencia"),
+                resultado.getInt("id_usuario")
+        );
+
+        movimiento.setNombreProducto(resultado.getString("nombre_producto"));
+        movimiento.setNombreUsuario(resultado.getString("nombre_usuario"));
+        return movimiento;
+    }
+
+    private void asignarUsuario(PreparedStatement sentencia, int posicion, int idUsuario) throws SQLException {
+        if (idUsuario > 0) {
+            sentencia.setInt(posicion, idUsuario);
+        } else {
+            sentencia.setNull(posicion, Types.INTEGER);
+        }
+    }
+
+    // Registra el movimiento y el cambio de stock de forma atómica
+    @Override
+    public boolean registrarMovimiento(MovimientoInventario movimiento) {
+        validarMovimiento(movimiento);
+
+        Connection conexion = conexion();
+        synchronized (conexion) {
+            boolean autocommit = true;
+            try {
+                autocommit = conexion.getAutoCommit();
+                conexion.setAutoCommit(false);
+
+                int diferencia = movimiento.getTipo().equalsIgnoreCase("ENTRADA")
+                        ? movimiento.getCantidad()
+                        : -movimiento.getCantidad();
+
+                if (!actualizarStock(conexion, movimiento.getIdProducto(), diferencia)
+                        || !insertarMovimiento(conexion, movimiento)) {
+                    conexion.rollback();
+                    return false;
+                }
+
+                conexion.commit();
+                return true;
+            } catch (SQLException excepcion) {
+                try {
+                    conexion.rollback();
+                } catch (SQLException errorRollback) {
+                    System.err.println("Error al revertir el movimiento: " + errorRollback.getMessage());
+                }
+                System.err.println("Error al registrar movimiento: " + excepcion.getMessage());
+                return false;
+            } finally {
+                try {
+                    conexion.setAutoCommit(autocommit);
+                } catch (SQLException excepcion) {
+                    System.err.println("Error al restaurar la conexión: " + excepcion.getMessage());
+                }
+            }
+        }
+    }
+
+    private void validarMovimiento(MovimientoInventario movimiento) {
+        if (movimiento == null
+                || movimiento.getIdProducto() <= 0
+                || movimiento.getCantidad() <= 0
+                || movimiento.getIdUsuario() <= 0
+                || (!"ENTRADA".equalsIgnoreCase(movimiento.getTipo())
+                && !"SALIDA".equalsIgnoreCase(movimiento.getTipo()))) {
+            throw new IllegalArgumentException("El movimiento debe tener producto, usuario, tipo y cantidad válidos.");
+        }
+    }
+
+    private boolean actualizarStock(Connection conexion, int idProducto, int diferencia) throws SQLException {
+        String sql = "UPDATE productos SET stock_actual = stock_actual + ? "
+                + "WHERE id_producto = ? AND stock_actual + ? >= 0";
+
+        try (PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+            sentencia.setInt(1, diferencia);
+            sentencia.setInt(2, idProducto);
+            sentencia.setInt(3, diferencia);
+            return sentencia.executeUpdate() == 1;
+        }
+    }
+
+    private boolean insertarMovimiento(Connection conexion, MovimientoInventario movimiento) throws SQLException {
+        String sql = "INSERT INTO movimientos "
+                + "(tipo, id_producto, cantidad, motivo, fecha, referencia, id_usuario) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+            sentencia.setString(1, movimiento.getTipo().toUpperCase(Locale.ROOT));
+            sentencia.setInt(2, movimiento.getIdProducto());
+            sentencia.setInt(3, movimiento.getCantidad());
+            sentencia.setString(4, movimiento.getMotivo());
+            sentencia.setTimestamp(5, Timestamp.valueOf(
+                    movimiento.getFecha() == null
+                            ? java.time.LocalDateTime.now()
+                            : movimiento.getFecha()
+            ));
+            sentencia.setString(6, movimiento.getReferencia());
+            asignarUsuario(sentencia, 7, movimiento.getIdUsuario());
+            return sentencia.executeUpdate() == 1;
+        }
+    }
+
+    @Override
+    public boolean crear(MovimientoInventario movimiento) {
+        return registrarMovimiento(movimiento);
+    }
+
+    @Override
+    public MovimientoInventario obtenerPorId(int id) {
+        String sql = consultaMovimientos() + " WHERE m.id_movimiento = ?";
+        try (PreparedStatement sentencia = conexion().prepareStatement(sql)) {
+            sentencia.setInt(1, id);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                return resultado.next() ? mapear(resultado) : null;
+            }
+        } catch (SQLException excepcion) {
+            System.err.println("Error al buscar movimiento: " + excepcion.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public List<MovimientoInventario> obtenerTodos() {
+        List<MovimientoInventario> movimientos = new ArrayList<>();
+        String sql = consultaMovimientos() + " ORDER BY m.fecha DESC, m.id_movimiento DESC";
+
+        try (Statement sentencia = conexion().createStatement();
+             ResultSet resultado = sentencia.executeQuery(sql)) {
+            while (resultado.next()) {
+                movimientos.add(mapear(resultado));
+            }
+        } catch (SQLException excepcion) {
+            System.err.println("Error al obtener movimientos: " + excepcion.getMessage());
+        }
+        return movimientos;
+    }
+
+    @Override
+    public List<MovimientoInventario> obtenerRecientes(int limite) {
+        if (limite <= 0) {
+            throw new IllegalArgumentException("El límite debe ser mayor que cero.");
+        }
+
+        List<MovimientoInventario> movimientos = new ArrayList<>();
+        String sql = consultaMovimientos() + " ORDER BY m.fecha DESC, m.id_movimiento DESC LIMIT ?";
+        try (PreparedStatement sentencia = conexion().prepareStatement(sql)) {
+            sentencia.setInt(1, limite);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+                    movimientos.add(mapear(resultado));
+                }
+            }
+        } catch (SQLException excepcion) {
+            System.err.println("Error al obtener movimientos recientes: " + excepcion.getMessage());
+        }
+        return movimientos;
+    }
+
+    private String consultaMovimientos() {
+        return "SELECT m.*, p.nombre AS nombre_producto, u.nombre_completo AS nombre_usuario "
+                + "FROM movimientos m "
+                + "JOIN productos p ON p.id_producto = m.id_producto "
+                + "LEFT JOIN usuarios u ON u.id_usuario = m.id_usuario";
+    }
+
+    // Los movimientos se conservan como auditoría y no se editan ni eliminan
+    @Override
+    public boolean actualizar(MovimientoInventario movimiento) {
+        throw new UnsupportedOperationException("Los movimientos de inventario son inmutables.");
+    }
+
+    @Override
+    public boolean eliminar(int id) {
+        throw new UnsupportedOperationException("Los movimientos de inventario son inmutables.");
+    }
 }

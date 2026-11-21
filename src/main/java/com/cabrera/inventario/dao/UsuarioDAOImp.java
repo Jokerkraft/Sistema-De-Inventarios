@@ -99,8 +99,12 @@ public class UsuarioDAOImp implements UsuarioDAO{
     // Elimina el usuario que corresponde al identificador recibido
     @Override
     public boolean eliminar(int id) {
-        try (PreparedStatement sentencia = ConexionBaseDatos.obtenerInstancia().obtenerConexion().prepareStatement("DELETE FROM usuarios WHERE id_usuario = ?")) {
-            sentencia.setInt(1, id); return sentencia.executeUpdate() > 0;
+        String sql = "DELETE FROM usuarios WHERE id_usuario = ? "
+                + "AND NOT EXISTS (SELECT 1 FROM movimientos WHERE id_usuario = ?)";
+        try (PreparedStatement sentencia = ConexionBaseDatos.obtenerInstancia().obtenerConexion().prepareStatement(sql)) {
+            sentencia.setInt(1, id);
+            sentencia.setInt(2, id);
+            return sentencia.executeUpdate() > 0;
         } catch (SQLException excepcion) { System.err.println("Error al eliminar usuario: " + excepcion.getMessage()); return false; }
     }
 }

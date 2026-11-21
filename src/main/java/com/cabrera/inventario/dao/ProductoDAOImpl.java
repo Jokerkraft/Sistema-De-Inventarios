@@ -65,14 +65,23 @@ public class ProductoDAOImpl implements ProductoDAO {
         String consultaProducto = "INSERT INTO productos (codigo, nombre, descripcion, precio_compra, precio_venta, stock_actual) VALUES (?, ?, ?, ?, ?, ?)";
         Connection conexion = proveedorConexion.get();
 
-        try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(consultaProducto)) {
+        try (java.sql.PreparedStatement sentencia = conexion.prepareStatement(
+                consultaProducto, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             sentencia.setString(1, entidad.getCodigo());
             sentencia.setString(2, entidad.getNombre());
             sentencia.setString(3, entidad.getDescripcion());
             sentencia.setDouble(4, entidad.getPrecioCompra());
             sentencia.setDouble(5, entidad.getPrecioVenta());
             sentencia.setInt(6, entidad.getStockActual());
-            return sentencia.executeUpdate() > 0;
+            if (sentencia.executeUpdate() == 0) {
+                return false;
+            }
+            try (ResultSet claves = sentencia.getGeneratedKeys()) {
+                if (claves.next()) {
+                    entidad.setIdProducto(claves.getInt(1));
+                }
+            }
+            return entidad.getIdProducto() > 0;
         } catch (SQLException excepcion) {
             System.err.println("Error al guardar producto: " + excepcion.getMessage());
             return false;
@@ -110,10 +119,37 @@ public class ProductoDAOImpl implements ProductoDAO {
         return productoEncontrado;
     }
 
-    // Actualiza los datos y el stock del producto identificado por su ID
+    @Override
+    public Producto obtenerPorCodigo(String codigo) {
+        String consulta = "SELECT id_producto, codigo, nombre, descripcion, "
+                + "precio_compra, precio_venta, stock_actual "
+                + "FROM productos WHERE codigo = ?";
+
+        try (java.sql.PreparedStatement sentencia = proveedorConexion.get().prepareStatement(consulta)) {
+            sentencia.setString(1, codigo);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                if (resultado.next()) {
+                    return new Producto(
+                            resultado.getInt("id_producto"),
+                            resultado.getString("codigo"),
+                            resultado.getString("nombre"),
+                            resultado.getString("descripcion"),
+                            resultado.getDouble("precio_compra"),
+                            resultado.getDouble("precio_venta"),
+                            resultado.getInt("stock_actual")
+                    );
+                }
+            }
+        } catch (SQLException excepcion) {
+            System.err.println("Error al buscar producto por código: " + excepcion.getMessage());
+        }
+        return null;
+    }
+
+    // Actualiza los datos del producto sin modificar sus existencias
     @Override
     public boolean actualizar(Producto entidad) {
-        String updateProducto = "UPDATE productos SET nombre = ?, descripcion = ?, precio_compra = ?, precio_venta = ?, stock_actual = ? WHERE id_producto = ?";
+        String updateProducto = "UPDATE productos SET nombre = ?, descripcion = ?, precio_compra = ?, precio_venta = ? WHERE id_producto = ?";
 
         Connection conexion = proveedorConexion.get();
 
@@ -122,8 +158,7 @@ public class ProductoDAOImpl implements ProductoDAO {
             sentencia.setString(2, entidad.getDescripcion());
             sentencia.setDouble(3, entidad.getPrecioCompra());
             sentencia.setDouble(4, entidad.getPrecioVenta());
-            sentencia.setInt(5, entidad.getStockActual());
-            sentencia.setInt(6, entidad.getIdProducto());
+            sentencia.setInt(5, entidad.getIdProducto());
             return sentencia.executeUpdate() > 0;
         } catch (SQLException excepcion) {
             System.err.println("Error al actualizar producto: " + excepcion.getMessage());
