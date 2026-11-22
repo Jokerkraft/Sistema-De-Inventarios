@@ -29,6 +29,9 @@
 
                 <Label fx:id="lblSesion" text="Sesión no identificada" textFill="WHITE" />
                 <Button fx:id="btnNuevoProducto" mnemonicParsing="false" onAction="#abrirVentanaNuevoProducto" style="-fx-background-color: linear-gradient(to right, #22c55e, #16a34a); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Nuevo Producto" />
+                <Button mnemonicParsing="false" onAction="#abrirVentanaDashboard"
+                        style="-fx-background-color: linear-gradient(to right, #8b5cf6, #7c3aed); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;"
+                        text="Dashboard" />
                 <Button mnemonicParsing="false" onAction="#abrirVentanaMovimientos" style="-fx-background-color: linear-gradient(to right, #3b82f6, #2563eb); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Movimientos" />
                 <Button fx:id="btnProveedores" mnemonicParsing="false" onAction="#abrirVentanaProveedores" style="-fx-background-color: linear-gradient(to right, #f59e0b, #f97316); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Proveedores" />
                 <Button mnemonicParsing="false" onAction="#cerrarSesion" style="-fx-background-color: linear-gradient(to right, #10b981, #059669); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Cerrar Sesión" />

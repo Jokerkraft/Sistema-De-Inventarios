@@ -1,14 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="$CONTROLLER_NAME$"
-            prefHeight="400.0" prefWidth="600.0" >
+<BorderPane prefHeight="620.0" prefWidth="960.0" style="-fx-background-color: #f1f5f9;"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.cabrera.inventario.controllers.DashboardController">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="12.0" style="-fx-background-color: #1e3a8a; -fx-padding: 15 20;">
+            <Label text="Dashboard e Indicadores de Inventario" textFill="WHITE">
+                <font>
+                    <Font name="System Bold" size="18.0" />
+                </font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button onAction="#cargarIndicadores"
+                    style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8px;"
+                    text="Actualizar" />
+            <Button onAction="#cerrarVentana"
+                    style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8px;"
+                    text="Cerrar" />
+        </HBox>
+    </top>
 
-</AnchorPane>
+    <center>
+        <VBox spacing="18.0">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+
+            <!-- Tarjetas de KPIs -->
+            <HBox spacing="15.0">
+                <VBox spacing="4.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                    <Label text="Total de Productos" textFill="#64748b" />
+                    <Label fx:id="lblTotalProductos" text="0" textFill="#0f172a">
+                        <font><Font name="System Bold" size="22.0" /></font>
+                    </Label>
+                </VBox>
+
+                <VBox spacing="4.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                    <Label text="Unidades en Existencia" textFill="#64748b" />
+                    <Label fx:id="lblUnidadesTotales" text="0" textFill="#1d4ed8">
+                        <font><Font name="System Bold" size="22.0" /></font>
+                    </Label>
+                </VBox>
+
+                <VBox spacing="4.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                    <Label text="Valor del Inventario" textFill="#64748b" />
+                    <Label fx:id="lblValorInventario" text="\$0.00" textFill="#059669">
+                        <font><Font name="System Bold" size="22.0" /></font>
+                    </Label>
+                </VBox>
+
+                <VBox spacing="4.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 15;" HBox.hgrow="ALWAYS">
+                    <Label text="Alertas Stock Bajo" textFill="#64748b" />
+                    <Label fx:id="lblStockBajo" text="0" textFill="#dc2626">
+                        <font><Font name="System Bold" size="22.0" /></font>
+                    </Label>
+                </VBox>
+            </HBox>
+
+            <!-- Gráficas -->
+            <HBox spacing="15.0" VBox.vgrow="ALWAYS">
+                <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;" HBox.hgrow="ALWAYS">
+                    <PieChart fx:id="graficaEstadoStock" title="Distribución por Estado de Stock" VBox.vgrow="ALWAYS" />
+                </VBox>
+
+                <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-padding: 10;" HBox.hgrow="ALWAYS">
+                    <BarChart fx:id="graficaMovimientos" legendVisible="false" title="Unidades Movidas (Entradas vs Salidas)" VBox.vgrow="ALWAYS">
+                        <xAxis>
+                            <CategoryAxis label="Tipo de Movimiento" />
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Unidades" />
+                        </yAxis>
+                    </BarChart>
+                </VBox>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

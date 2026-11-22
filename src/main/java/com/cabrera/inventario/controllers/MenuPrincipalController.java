@@ -395,6 +395,19 @@ public class MenuPrincipalController {
             alerta.showAndWait();
         }
     }
+    @FXML
+    void abrirVentanaDashboard(ActionEvent event) {
+        try {
+            FXMLLoader cargador = new FXMLLoader(getClass().getResource("/com/cabrera/inventario/views/Dashboard.fxml"));
+            Parent raiz = cargador.load();
 
-
+            Stage ventana = new Stage();
+            ventana.setTitle("Dashboard de Inventario");
+            ventana.setScene(new Scene(raiz));
+            ventana.initModality(Modality.APPLICATION_MODAL);
+            ventana.showAndWait();
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo abrir el Dashboard: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
 }
