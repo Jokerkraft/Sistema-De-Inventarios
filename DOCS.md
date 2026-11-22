@@ -27,6 +27,19 @@ contraseña desde la vista, valida que no estén vacíos y delega la consulta a
 El acceso solo se concede si existe un usuario con el `username`, contraseña y
 estado activo correspondientes.
 
+### Registro de cuentas y recuperación de contraseña
+
+Desde `Login.fxml` se accede a la ventana modal `Cuenta.fxml` (`CuentaController`),
+que permite:
+
+- **Crear cuenta:** valida campos obligatorios, longitud mínima de contraseña,
+  confirmación y unicidad de `username` mediante `UsuarioDAOImp.obtenerPorUsername()`.
+  Las cuentas auto-registradas se crean activas con rol `OPERADOR` y contraseña
+  cifrada en SHA-1.
+- **Recuperar contraseña:** verifica que el `username` y el `nombreCompleto`
+  coincidan con un registro existente antes de actualizar el nuevo hash SHA-1
+  mediante `UsuarioDAOImp.actualizar()`.
+
 ### Hash de contraseña
 
 Clase: `com.cabrera.inventario.util.UtilidadSeguridad`
@@ -42,8 +55,9 @@ Proceso actual:
 > inicial. Para una versión real debe sustituirse por BCrypt o Argon2.
 
 El sistema actual no usa JWT ni tokens persistentes. El rol `ADMIN` puede
-gestionar el catálogo, proveedores e importaciones; los demás roles pueden
-consultar el inventario, exportarlo y registrar movimientos.
+gestionar el catálogo, proveedores e importaciones; el rol `OPERADOR` y los
+demás perfiles pueden consultar el inventario, visualizar el Dashboard,
+exportar datos y registrar movimientos.
 
 ## 3. Patrones de diseño implementados
 
@@ -59,9 +73,8 @@ Implementaciones:
 2. `PrecioAPIStrategy`: consulta FakeStoreAPI y usa el precio recibido como una
    sugerencia; si la consulta falla, conserva el precio base.
 
-`NuevoProductoController` utiliza actualmente `PrecioAPIStrategy` para el botón
-de precio sugerido. La interfaz permite sustituir el cálculo sin cambiar el
-controlador.
+`NuevoProductoController` utiliza esta interfaz para calcular el precio sugerido
+sin acoplarse a una regla específica de cálculo.
 
 ### 3.2 Data Access Object (DAO)
 
@@ -82,7 +95,7 @@ Implementaciones activas:
 - `ProductoDAOImpl`: consulta y administra productos; el stock solo se modifica
   mediante movimientos.
 - `ProveedorDAOImpl`: administra proveedores.
-- `UsuarioDAOImp`: autentica usuarios.
+- `UsuarioDAOImp`: autentica, consulta, registra y actualiza usuarios.
 - `MovimientoInventarioDAOImpl`: registra movimientos y actualiza stock dentro
   de la misma transacción JDBC.
 
@@ -94,6 +107,15 @@ Ubicación: `util/ConexionBaseDatos.java`
 
 `ConexionBaseDatos` conserva una única instancia de conexión JDBC a MySQL.
 Carga la configuración desde `database.properties` y la expone a los DAO.
+
+### 3.4 Factory Method Pattern
+
+Ubicación: `factories/PrecioStrategyFactory.java`
+
+`PrecioStrategyFactory` encapsula la creación de las estrategias de cálculo de
+precios (`PrecioAPIStrategy` y `PrecioLocalStrategy`) a partir del enum
+`TipoEstrategia`. Desacopla a `NuevoProductoController` de las clases concretas
+y centraliza la instanciación de nuevas estrategias.
 
 ## 4. Programación genérica
 
@@ -129,8 +151,10 @@ Ubicación: `src/main/java/com/cabrera/inventario/views/`
 
 Vistas disponibles:
 
-- `Login.fxml`: acceso al sistema.
+- `Login.fxml`: acceso al sistema y enlaces de gestión de cuenta.
+- `Cuenta.fxml`: registro de nuevos usuarios y restablecimiento de contraseña.
 - `MenuPrincipal.fxml`: tabla del inventario y navegación principal.
+- `Dashboard.fxml`: indicadores KPI y gráficas estadísticas del inventario.
 - `NuevoProducto.fxml`: alta de productos.
 - `EditarProducto.fxml`: actualización de producto seleccionado.
 - `Proveedores.fxml`: mantenimiento de proveedores.
@@ -140,11 +164,13 @@ Vistas disponibles:
 
 Ubicación: `controllers/`
 
-- `LoginController`: valida acceso y abre el menú principal.
-- `MenuPrincipalController`: carga productos, abre ventanas de alta, edición y
-  proveedores; también elimina productos y cierra sesión.
-- `NuevoProductoController`: valida y registra productos; solicita precio
-  sugerido mediante Strategy.
+- `LoginController`: valida acceso, abre la gestión de cuentas y navega al menú principal.
+- `CuentaController`: gestiona el alta de usuarios y la recuperación de contraseñas.
+- `MenuPrincipalController`: carga productos, abre ventanas de alta, edición,
+  proveedores, movimientos y Dashboard; también elimina productos y cierra sesión.
+- `DashboardController`: calcula KPIs y alimenta las gráficas (`PieChart` y `BarChart`).
+- `NuevoProductoController`: valida y registra productos; obtiene la estrategia de
+  precio sugerido mediante `PrecioStrategyFactory`.
 - `EditarProductoController`: actualiza los datos del producto y valida
   precios no negativos.
 - `ProveedoresController`: crea, modifica, lista y elimina proveedores.
@@ -154,14 +180,70 @@ Ubicación: `controllers/`
 ### Flujo principal
 
 ```text
-Vista FXML → Controller → DAO → JDBC → MySQL
+Vista FXML → Controller → Factory / Strategy / DAO → JDBC → MySQL
+```
+
+### Diagrama de Clases UML (Patrones y Persistencia)
+
+```mermaid
+classDiagram
+    class ConexionBaseDatos {
+        -static ConexionBaseDatos instancia
+        -Connection conexion
+        +static obtenerInstancia() ConexionBaseDatos
+        +obtenerConexion() Connection
+    }
+    class DaoGenerico~T~ {
+        <<interface>>
+        +crear(T entidad) boolean
+        +obtenerPorId(int id) T
+        +obtenerTodos() List~T~
+        +actualizar(T entidad) boolean
+        +eliminar(int id) boolean
+    }
+    class ProductoDAOImpl
+    class UsuarioDAOImp {
+        +autenticar(String username, String password) Usuario
+        +obtenerPorUsername(String username) Usuario
+    }
+    class ProveedorDAOImpl
+    class MovimientoInventarioDAOImpl {
+        +registrarMovimiento(MovimientoInventario mov) boolean
+        +obtenerRecientes(int limite) List~MovimientoInventario~
+    }
+    class PrecioStrategy {
+        <<interface>>
+        +calcularPrecio(String codigo, double precioBase) double
+    }
+    class PrecioAPIStrategy
+    class PrecioLocalStrategy
+    class PrecioStrategyFactory {
+        +static crearEstrategia(TipoEstrategia tipo) PrecioStrategy
+    }
+    class OrdenadorGenerico {
+        +static ordenar(List~T~ elementos, Comparator comparador) List~T~
+    }
+
+    DaoGenerico <|.. ProductoDAOImpl
+    DaoGenerico <|.. UsuarioDAOImp
+    DaoGenerico <|.. ProveedorDAOImpl
+    DaoGenerico <|.. MovimientoInventarioDAOImpl
+    PrecioStrategy <|.. PrecioAPIStrategy
+    PrecioStrategy <|.. PrecioLocalStrategy
+    PrecioStrategyFactory ..> PrecioStrategy : crea
+    ProductoDAOImpl ..> ConexionBaseDatos : usa
+    UsuarioDAOImp ..> ConexionBaseDatos : usa
+    ProveedorDAOImpl ..> ConexionBaseDatos : usa
+    MovimientoInventarioDAOImpl ..> ConexionBaseDatos : usa
 ```
 
 ## 6. Funcionalidades
 
-### 6.1 Autenticación
+### 6.1 Autenticación y gestión de cuentas
 
 - Inicio de sesión con usuario activo almacenado en MySQL.
+- Registro de nuevas cuentas con rol `OPERADOR` y validación de duplicados.
+- Recuperación de contraseña mediante verificación de identidad y actualización en SHA-1.
 - Validación de campos vacíos.
 - Cierre de sesión que vuelve a la pantalla de acceso.
 - Salida completa de JavaFX.
@@ -214,7 +296,16 @@ inicia con cero existencias y las cantidades se ajustan mediante movimientos.
 - Datos de contacto: teléfono, correo y dirección.
 - Estado activo/inactivo.
 
-### 6.6 Funcionalidades aún no implementadas en la interfaz
+### 6.6 Dashboard e indicadores de desempeño
+
+- Tarjetas KPI en tiempo real: total de productos registrados, unidades totales
+  en existencia, valor monetario del inventario y conteo de alertas de stock bajo.
+- Gráfica circular (`PieChart`) con la distribución del catálogo por estado de
+  existencias (Stock Óptimo, Stock Bajo y Agotado).
+- Gráfica de barras (`BarChart`) que compara el volumen total de unidades en
+  movimientos de `ENTRADA` frente a `SALIDA`.
+
+### 6.7 Funcionalidades aún no implementadas en la interfaz
 
 - CRUD de categorías y clientes.
 - Registro de compras y ventas con actualización automática del stock.
@@ -317,8 +408,9 @@ La compilación y las pruebas unitarias se validan con:
 
 La verificación completa contra MySQL requiere tener Docker Desktop o un
 servidor MySQL en ejecución. Después de crear una base nueva se recomienda
-probar login, CRUD de productos y proveedores, entradas, salidas, rechazo de
-stock insuficiente, reporte de movimientos e importación/exportación CSV y JSON.
+probar login, registro y recuperación de cuentas, CRUD de productos y proveedores,
+entradas, salidas, rechazo de stock insuficiente, Dashboard con gráficas, reporte
+de movimientos e importación/exportación CSV y JSON.
 
 ## 10. Más implementaciones que se podrían mejorar
 
@@ -330,4 +422,4 @@ stock insuficiente, reporte de movimientos e importación/exportación CSV y JSO
 5. Agregar pruebas de integración de los DAO contra MySQL.
 
 # API usada para el ejemplo
-- API disponible en: https://fakestoreapi.comß
+- API disponible en: https://fakestoreapi.com
