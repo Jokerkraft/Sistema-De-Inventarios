@@ -1,6 +1,7 @@
 package com.cabrera.inventario.controllers;
 
 import com.cabrera.inventario.dao.*;
+import com.cabrera.inventario.factories.PrecioStrategyFactory;
 import com.cabrera.inventario.models.Producto;
 import com.cabrera.inventario.strategies.PrecioStrategy;
 import com.cabrera.inventario.strategies.PrecioAPIStrategy;
@@ -19,8 +20,9 @@ public class NuevoProductoController {
     @FXML private TextField txtDescripcion;
     @FXML private TextField txtPrecioBase;
 
-    // Instanciamos el comportamiento de la API
-    private PrecioStrategy estrategiaAPI = new PrecioAPIStrategy();
+    //
+    private final PrecioStrategy estrategiaPrecio =
+            PrecioStrategyFactory.crearEstrategia(PrecioStrategyFactory.TipoEstrategia.API);
 
     // Instanciamos el DAO de productos para guardarlos en MySQL
     private ProductoDAO productoDAO = new ProductoDAOImpl();
@@ -32,7 +34,7 @@ public class NuevoProductoController {
             double precioBase = Double.parseDouble(txtPrecioBase.getText());
             String codigo = txtCodigo.getText();
 
-            double precioSugerido = estrategiaAPI.calcularPrecio(codigo, precioBase);
+            double precioSugerido = estrategiaPrecio.calcularPrecio(codigo, precioBase);
 
             // Actualizamos el campo de texto. Usamos replace para evitar errores de comas y puntos decimales
             txtPrecioBase.setText(String.format("%.2f", precioSugerido).replace(",", "."));
