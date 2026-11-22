@@ -97,4 +97,33 @@ public class LoginController {
         alerta.setContentText(mensaje);
         alerta.showAndWait();
     }
+
+    @FXML
+    void abrirRegistroCuenta(ActionEvent event) {
+        abrirModalCuenta(0);
+    }
+
+    @FXML
+    void abrirRecuperarContrasena(ActionEvent event) {
+        abrirModalCuenta(1);
+    }
+
+    // Abre la ventana de cuenta en la pestaña solicitada y espera su cierre.
+    private void abrirModalCuenta(int pestana) {
+        try {
+            FXMLLoader cargador = new FXMLLoader(getClass().getResource("/com/cabrera/inventario/views/Cuenta.fxml"));
+            Parent raiz = cargador.load();
+            CuentaController controlador = cargador.getController();
+            controlador.seleccionarPestana(pestana);
+
+            Stage modal = new Stage();
+            modal.setTitle("Cuenta de Acceso");
+            modal.setScene(new Scene(raiz));
+            modal.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            modal.setResizable(false);
+            modal.showAndWait();
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo abrir la ventana de cuentas.", Alert.AlertType.ERROR);
+        }
+    }
 }

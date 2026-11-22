@@ -107,4 +107,19 @@ public class UsuarioDAOImp implements UsuarioDAO{
             return sentencia.executeUpdate() > 0;
         } catch (SQLException excepcion) { System.err.println("Error al eliminar usuario: " + excepcion.getMessage()); return false; }
     }
+
+    @Override
+    public Usuario obtenerPorUsername(String username) {
+        String sql = "SELECT * FROM usuarios WHERE username = ?";
+        try (PreparedStatement sentencia = ConexionBaseDatos.obtenerInstancia()
+                .obtenerConexion().prepareStatement(sql)) {
+            sentencia.setString(1, username);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                return resultado.next() ? mapearUsuario(resultado) : null;
+            }
+        } catch (SQLException excepcion) {
+            System.err.println("Error al buscar usuario por username: " + excepcion.getMessage());
+            return null;
+        }
+    }
 }

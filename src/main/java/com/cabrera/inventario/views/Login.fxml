@@ -5,11 +5,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="465.0" prefWidth="739.0" style="-fx-background: linear-gradient(to bottom, #04ffb6 0%, #0078ff 35%, #98beff 100%);" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.cabrera.inventario.controllers.LoginController">
+<StackPane minHeight="520.0" minWidth="680.0" prefHeight="560.0" prefWidth="780.0" style="-fx-background: linear-gradient(to bottom, #04ffb6 0%, #0078ff 35%, #98beff 100%);" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.cabrera.inventario.controllers.LoginController">
     <children>
-        <VBox alignment="CENTER" layoutX="195.0" layoutY="35.0" prefHeight="350.0" prefWidth="330.0" spacing="18.0" style="-fx-background-color: linear-gradient(to bottom, #ffffff 0%, #f3f7ff 100%); -fx-border-color: #c8d9ff; -fx-border-width: 1.5; -fx-border-radius: 18px; -fx-background-radius: 18px; -fx-effect: dropshadow(three-pass-box, rgba(26,64,137,0.22), 18, 0.2, 0, 8);">
+        <VBox alignment="CENTER" maxWidth="460.0" prefHeight="430.0" prefWidth="420.0" spacing="14.0" style="-fx-background-color: linear-gradient(to bottom, #ffffff 0%, #f3f7ff 100%); -fx-border-color: #c8d9ff; -fx-border-width: 1.5; -fx-border-radius: 18px; -fx-background-radius: 18px; -fx-effect: dropshadow(three-pass-box, rgba(26,64,137,0.22), 18, 0.2, 0, 8);">
             <padding>
-                <Insets bottom="28.0" left="28.0" right="28.0" top="28.0" />
+                <Insets bottom="26.0" left="30.0" right="30.0" top="26.0" />
             </padding>
             <children>
                 <Label text="Sistema de Inventarios" textFill="#183d8d">
@@ -38,9 +38,15 @@
                     </children>
                 </VBox>
 
-                <Button mnemonicParsing="false" onAction="#manejarIngreso" prefHeight="38.0" prefWidth="290.0" style="-fx-background-color: linear-gradient(to right, #1d4ed8, #3b82f6); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 12px; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(29,78,216,0.35), 8, 0.2, 0, 4);" text="Ingresar" />
+                <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#manejarIngreso" prefHeight="40.0" style="-fx-background-color: linear-gradient(to right, #1d4ed8, #3b82f6); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 12px; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(29,78,216,0.35), 8, 0.2, 0, 4);" text="Ingresar" />
+                <HBox alignment="CENTER" spacing="15.0">
+                    <children>
+                        <Hyperlink onAction="#abrirRegistroCuenta" text="Crear cuenta" />
+                        <Hyperlink onAction="#abrirRecuperarContrasena" text="¿Olvidaste tu contraseña?" />
+                    </children>
+                </HBox>
 
-                <HBox alignment="CENTER_RIGHT" prefWidth="290.0">
+                <HBox alignment="CENTER_RIGHT">
                     <children>
                         <Button mnemonicParsing="false" onAction="#salirAplicacion" prefWidth="95.0" style="-fx-background-color: linear-gradient(to right, #ef4444, #dc2626); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;" text="Salir" />
                     </children>
@@ -48,4 +54,4 @@
             </children>
         </VBox>
     </children>
-</AnchorPane>
+</StackPane>
